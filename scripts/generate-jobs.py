@@ -20,8 +20,6 @@ args = parser.parse_args()
 is_windows = any(platform.win32_ver())
 is_linux = not is_windows
 
-jobs = []
-
 
 class Config:
     cpp = None
@@ -71,10 +69,16 @@ all_configs = list(generate_configs())
 since_cpp14_configs = [c for c in all_configs if c.cpp >= 14]
 since_cpp17_configs = [c for c in all_configs if c.cpp >= 17]
 
+project_list = []
+project_jobs = {}
+
 
 def add(project, version, name, file, variant, configs):
+    if project not in project_jobs:
+        project_list.append(project)
+        project_jobs[project] = []
     for c in configs:
-        jobs.append({
+        job = {
             "project": project,
             "version": version,
             "name": name,
@@ -83,9 +87,10 @@ def add(project, version, name, file, variant, configs):
             "args": c.make_args(),
             "compiler": c.compiler,
             "compiler_name": c.compiler_name,
-        })
+        }
+        project_jobs[project].append(job)
         if args.verbose:
-            print("added {}".format(jobs[-1]))
+            print("added {}".format(job))
 
 # ===============================================================
 # Projects
@@ -156,7 +161,7 @@ for h in [
     "iostream",
     "fstream",
     "sstream",
-    "strstream",
+    # "strstream", # deprecated
     "iomanip",
     "streambuf",
     "cstdio",
@@ -166,7 +171,6 @@ for h in [
     "atomic",
     "thread",
     "mutex",
-    "shared_mutex",
     "future",
     "condition_variable",
 ]:
@@ -187,11 +191,73 @@ for h in [
     "execution",
     "filesystem",
 ]:
-    add("C++ Standard Library", "", "<" + h + ">", h, "", since_cpp17_configs)
+    for c in since_cpp17_configs:
+        if h in ["memory_resource", "execution"] and "clang" in c.compiler:
+            continue
+        if c.compiler.endswith("g++-7") and h == "filesystem":
+            continue
+        if (c.compiler.endswith("g++-7") or c.compiler.endswith("g++-8")) and h in ["memory_resource", "charconv", "execution"]:
+            continue
+
+        add("C++ Standard Library", "", "<" + h + ">", h, "", [c])
+
+
+# ===============================================================
+# c std
+
+for h in [
+    "assert.h",
+    "complex.h",
+    "ctype.h",
+    "errno.h",
+    "fenv.h",
+    "float.h",
+    "inttypes.h",
+    "iso646.h",
+    "limits.h",
+    "locale.h",
+    "math.h",
+    "setjmp.h",
+    "signal.h",
+    # C11: "stdalign.h",
+    "stdarg.h",
+    # C11: "stdatomic.h",
+    "stdbool.h",
+    "stddef.h",
+    "stdint.h",
+    "stdio.h",
+    "stdlib.h",
+    # C11: "stdnoreturn.h",
+    "string.h",
+    "tgmath.h",
+    # C11: "threads.h",
+    "time.h",
+    # C11: "uchar.h",
+    "wchar.h",
+    "wctype.h",
+]:
+    add("C Standard Library", "", "<" + h + ">", h, "", all_configs)
+
+
+# ===============================================================
+# nlohmann/json
+
+for v in [
+    "3.7.3"
+]:
+    for h in [
+        "json.hpp",
+        "json_fwd.hpp"
+    ]:
+        add("nlohmann/json", v, h, "libs/nlohmann-json/" + v + "/" + h, "", all_configs)
 
 
 # ===============================================================
 # finalize
+
+jobs = []
+for proj in project_list:
+    jobs += sorted(project_jobs[proj], key=lambda j: j["name"])
 
 with open(args.file, "w") as f:
     json.dump(jobs, f, indent=4)
