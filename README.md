@@ -1,4 +1,4 @@
-# cpp-compile-overhead
+# C++ Compile Health Watchdog
 
 Benchmark and accountability tool for C++ compile-time overhead / compile-time health.
 
