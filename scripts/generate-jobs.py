@@ -26,12 +26,13 @@ class Config:
     args = None
     compiler = None
     compiler_name = None
+    variant = None
 
     def __init__(self):
         self.args = []
 
     def make_args(self):
-        return self.args + ["-std=c++{}".format(self.cpp)]
+        return ["-std=c++{}".format(self.cpp)] + self.args
 
 
 def generate_configs():
@@ -53,10 +54,15 @@ def generate_configs():
                 continue
 
             for cpp in [11, 14, 17]:
-                for opt in ['-O0', '-O2']:
+                for variant in [
+                    ["Debug", ['-O0', '-g']],
+                    ["RelWithDebInfo", ['-O2', '-g', '-DNDEBUG']],
+                    ["Release", ['-O3', '-DNDEBUG']],
+                ]:
                     c = Config()
                     c.cpp = cpp
-                    c.args.append(opt)
+                    c.args = variant[1] + ["-march=skylake"]
+                    c.variant = variant[0]
                     c.compiler = cc[1]
                     c.compiler_name = cc[0]
                     yield c
@@ -73,7 +79,7 @@ project_list = []
 project_jobs = {}
 
 
-def add(project, version, name, file, variant, configs):
+def add(project, version, name, file, configs):
     if project not in project_jobs:
         project_list.append(project)
         project_jobs[project] = []
@@ -83,7 +89,7 @@ def add(project, version, name, file, variant, configs):
             "version": version,
             "name": name,
             "file": file,
-            "variant": variant,
+            "variant": c.variant,
             "args": c.make_args(),
             "compiler": c.compiler,
             "compiler_name": c.compiler_name,
@@ -174,12 +180,12 @@ for h in [
     "future",
     "condition_variable",
 ]:
-    add("C++ Standard Library", "", "<" + h + ">", h, "", all_configs)
+    add("C++ Standard Library", "", "<" + h + ">", h, all_configs)
 
 for h in [
     "shared_mutex",
 ]:
-    add("C++ Standard Library", "", "<" + h + ">", h, "", since_cpp14_configs)
+    add("C++ Standard Library", "", "<" + h + ">", h, since_cpp14_configs)
 
 for h in [
     "any",
@@ -199,7 +205,7 @@ for h in [
         if (c.compiler.endswith("g++-7") or c.compiler.endswith("g++-8")) and h in ["memory_resource", "charconv", "execution"]:
             continue
 
-        add("C++ Standard Library", "", "<" + h + ">", h, "", [c])
+        add("C++ Standard Library", "", "<" + h + ">", h, [c])
 
 
 # ===============================================================
@@ -236,20 +242,30 @@ for h in [
     "wchar.h",
     "wctype.h",
 ]:
-    add("C Standard Library", "", "<" + h + ">", h, "", all_configs)
+    add("C Standard Library", "", "<" + h + ">", h, all_configs)
 
 
 # ===============================================================
-# nlohmann/json
+# libs
 
-for v in [
-    "3.7.3"
-]:
-    for h in [
-        "json.hpp",
-        "json_fwd.hpp"
-    ]:
-        add("nlohmann/json", v, h, "libs/nlohmann-json/" + v + "/" + h, "", all_configs)
+for lib in os.listdir("libs"):
+    if not os.path.isdir("libs/" + lib):
+        continue
+
+    for v in os.listdir("libs/" + lib):
+        if not os.path.isdir("libs/" + lib + "/" + v):
+            continue
+
+        for f in os.listdir("libs/" + lib + "/" + v):
+            path = "libs/" + lib + "/" + v + "/" + f
+            if not os.path.isfile(path):
+                continue
+
+            ext = os.path.splitext(path)[-1]
+            if len(ext) < 2 or ext[1] not in ['c', 'h']:
+                continue
+
+            add(lib, v, f, path, all_configs)
 
 
 # ===============================================================

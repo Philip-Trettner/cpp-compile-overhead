@@ -78,6 +78,9 @@ preproc_baseline_args = [compiler] + cargs + \
 compile_baseline_args = [compiler] + cargs + \
     ["-I.", "-c", baseline_main, "-o", output_main]
 
+result["preproc_cmd"] = " ".join(preproc_args)
+result["compile_cmd"] = " ".join(compile_args)
+result["compiler_version"] = subprocess.check_output([compiler, "--version"]).decode("utf-8").splitlines()[0]
 
 # ============================================================
 # Create temporary files to compile
@@ -85,7 +88,7 @@ compile_baseline_args = [compiler] + cargs + \
 with open(file_main, "w") as f:
     f.writelines([
         "#include <" + file + ">\n",
-        "int main() { return 0; }\n"
+        "struct bar { int y; int x() { return y + 3; } }; int foo(int, int) { return 3; } int main() { return 0; }\n"
     ])
 
 with open(baseline_main, "w") as f:
@@ -118,29 +121,52 @@ subprocess.run(compile_args, check=True)
 result["object_size"] = os.path.getsize(output_main)
 
 # check symbols
-prog = re.compile(r'^[0-9a-zA-Z]* +(\w) (.+)$')
+prog = re.compile(r'^[0-9a-zA-Z]* ([0-9a-zA-Z]*) *(\w) (.+)$')
 undef_sym_cnt = 0
 undef_sym_size = 0
 data_sym_cnt = 0
 data_sym_size = 0
 code_sym_cnt = 0
 code_sym_size = 0
+weak_sym_cnt = 0
+weak_sym_size = 0
+debug_sym_cnt = 0
+debug_sym_size = 0
+sym_name_size = 0
 debug_print_exec(["nm", output_main])
-for l in subprocess.check_output(["nm", output_main]).decode("utf-8").splitlines():
+for l in subprocess.check_output(["nm", "-a", "-S", output_main]).decode("utf-8").splitlines():
     m = prog.match(l)
     assert m is not None, "could not parse line " + l
-    st = m.group(1)
-    sn = m.group(2)
+    ss = m.group(1)
+    st = m.group(2)
+    sn = m.group(3)
+    ss = 0 if ss == "" else int(ss, base=16)
 
-    if st in ['u', 'U']:
+    if sn == "main":
+        continue
+
+    # debug_print("symbol {}, {}, {}".format(ss,st,sn))
+
+    if st in ['U']:
         undef_sym_cnt += 1
-        undef_sym_size += len(sn)
-    elif st in ['b', 'B', 'r', 'R', 'd', 'D']:
+        undef_sym_size += ss
+        sym_name_size += len(sn)
+    elif st in ['b', 'B', 'r', 'R', 'd', 'D', 'n', 'g', 'G']:
         data_sym_cnt += 1
-        data_sym_size += len(sn)
+        data_sym_size += ss
+        sym_name_size += len(sn)
     elif st in ['t', 'T']:
         code_sym_cnt += 1
-        code_sym_size += len(sn)
+        code_sym_size += ss
+        sym_name_size += len(sn)
+    elif st in ['w', 'W', 'v', 'V', 'u']:
+        weak_sym_cnt += 1
+        weak_sym_size += ss
+        sym_name_size += len(sn)
+    elif st in ['N', 'a']:
+        debug_sym_cnt += 1
+        debug_sym_size += ss
+        sym_name_size += len(sn)
     else:
         assert False, "unknown symbol type " + st
 
@@ -150,6 +176,28 @@ result["data_symbol_count"] = data_sym_cnt
 result["data_symbol_size"] = data_sym_size
 result["code_symbol_count"] = code_sym_cnt
 result["code_symbol_size"] = code_sym_size
+result["weak_symbol_count"] = weak_sym_cnt
+result["weak_symbol_size"] = weak_sym_size
+result["debug_symbol_count"] = debug_sym_cnt
+result["debug_symbol_size"] = debug_sym_size
+result["symbol_name_size"] = sym_name_size
+
+# strings (BEFORE baseline!)
+string_cnt = 0
+string_size = 0
+for l in subprocess.check_output(["strings", output_main]).decode("utf-8").splitlines():
+    string_cnt += 1
+    string_size += len(l)
+result["string_count"] = string_cnt
+result["string_size"] = string_size
+
+# section sizes (BEFORE baseline!)
+for l in subprocess.check_output(["size", "-B", output_main]).decode("utf-8").splitlines():
+    if "main.o" in l:
+        parts = l.split()
+        result["text_size"] = int(parts[0])
+        result["data_size"] = int(parts[1])
+        result["bss_size"] = int(parts[2])
 
 # baseline object size
 debug_print_exec(compile_baseline_args)
@@ -163,12 +211,14 @@ result["object_size_base"] = os.path.getsize(output_main)
 def measure_time(sargs):
     ts = []
     while True:
-        if len(ts) > 20:
+        if len(ts) > 10:
             break
         if len(ts) >= 8:
             ts.sort()
             if ts[3] / ts[0] < 1.01:  # cheapest 4 deviate less than 1%
                 break
+        if len(ts) >= 3 and ts[0] > 1: # long compilations do not need many repetitions
+            break
 
         t0 = time.perf_counter()
         subprocess.call(sargs)
@@ -178,10 +228,10 @@ def measure_time(sargs):
     return ts[0]
 
 
-result["preprocessing_time"] = measure_time(preproc_args)
-result["compile_time"] = measure_time(compile_args)
 result["preprocessing_time_base"] = measure_time(preproc_baseline_args)
 result["compile_time_base"] = measure_time(compile_baseline_args)
+result["preprocessing_time"] = measure_time(preproc_args)
+result["compile_time"] = measure_time(compile_args)
 
 
 # ============================================================

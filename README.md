@@ -23,3 +23,17 @@ This project consists of three scripts:
 * `execute-jobs.py` takes a list of jobs and calls `analyze-file` for all jobs that were not found in the cache
 
 Finally, there is `generate-data.py` which executes `generate-jobs` followed by `execute-jobs`.
+
+
+## Roadmap / TODO
+
+Frontend (https://artificial-mind.net/projects/compile-health/):
+
+* filter by C++ version / build type / compiler
+* add custom data client-side (like in speedscope)
+* make data.json slimmer and load 3rd party libs lazily
+
+Backend (this repo):
+
+* add more 3rd party libraries
+* support for generate jobs from cmake
