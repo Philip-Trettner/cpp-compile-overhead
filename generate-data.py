@@ -15,7 +15,7 @@ args = parser.parse_args()
 assert os.path.exists(args.dir), "directory must exist"
 
 jobs_file = os.path.join(args.dir, "jobs.json")
-data_file = os.path.join(args.dir, "data.js")
+data_file = os.path.join(args.dir, "compile-health-data.json")
 cache_file = os.path.join(args.dir, "job-cache.json")
 
 if args.clear and os.path.exists(cache_file):

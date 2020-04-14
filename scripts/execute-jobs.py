@@ -8,7 +8,7 @@ import json
 
 parser = argparse.ArgumentParser(description="Execute jobs for C++ compile-health analyzer")
 parser.add_argument("file", metavar="J", help="jobs file (e.g. jobs.json)")
-parser.add_argument("result", metavar="R", help="result file (e.g. data.js)")
+parser.add_argument("result", metavar="R", help="result file (e.g. data.json)")
 parser.add_argument("-c", "--cache", required=True, help="cache file")
 parser.add_argument("-d", "--dir", required=True, type=str, help="temporary directory to use (e.g. /tmp)")
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
@@ -73,4 +73,5 @@ for j in jobs:
 print("was able to reuse {} results from cache".format(found_cached))
 
 with open(args.result, "w") as f:
-    f.write("var table_data = " + json.dumps(jobs, indent=4) + ";")
+    json.dump(jobs, f)
+    # f.write("var table_data = " + json.dumps(jobs, indent=4) + ";")
