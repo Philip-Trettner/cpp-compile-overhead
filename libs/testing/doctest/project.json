@@ -1,0 +1,4 @@
+{
+    "url": "https://github.com/onqtam/doctest",
+    "file_url_pattern": "https://github.com/onqtam/doctest/tree/$version/doctest/$file"
+}

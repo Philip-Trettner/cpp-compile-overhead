@@ -1,0 +1,4 @@
+{
+    "url": "https://github.com/nlohmann/json",
+    "file_url_pattern": "https://github.com/nlohmann/json/tree/$version/include/nlohmann/$file"
+}

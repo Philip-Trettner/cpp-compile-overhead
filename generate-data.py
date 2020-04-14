@@ -29,3 +29,6 @@ subprocess.check_call(
 # execute jobs
 subprocess.check_call(["python3", "scripts/execute-jobs.py", "-v",
                        "-d", args.dir, "-c", cache_file, jobs_file, data_file])
+
+print("generate {} kB of json data".format(int(os.path.getsize(data_file) / 1024.)))
+# print("generate {} kB of json data (zipped)".format(int(os.path.getsize(data_file + ".gz") / 1024.)))

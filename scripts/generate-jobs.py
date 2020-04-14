@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import os
 import argparse
 import platform
@@ -13,6 +14,10 @@ parser.add_argument("-v", "--verbose", help="increase output verbosity",
                     action="store_true")
 
 args = parser.parse_args()
+
+def debug_print(s):
+    if args.verbose:
+        print(s)
 
 # ===============================================================
 # framework
@@ -79,18 +84,22 @@ project_list = []
 project_jobs = {}
 
 
-def add(project, version, name, file, configs):
+def add(category, project, project_url, url, version, name, file, configs):
     if project not in project_jobs:
         project_list.append(project)
         project_jobs[project] = []
     for c in configs:
         job = {
+            "category": category,
             "project": project,
+            "project_url": project_url,
+            "url": url,
             "version": version,
             "name": name,
             "file": file,
             "variant": c.variant,
             "args": c.make_args(),
+            "cpp": c.cpp,
             "compiler": c.compiler,
             "compiler_name": c.compiler_name,
         }
@@ -105,6 +114,9 @@ def add(project, version, name, file, configs):
 
 # ===============================================================
 # c++ std
+
+url_cpp = "https://en.cppreference.com/w/cpp/header"
+
 for h in [
     "cstdlib",
     "csignal",
@@ -180,12 +192,12 @@ for h in [
     "future",
     "condition_variable",
 ]:
-    add("C++ Standard Library", "", "<" + h + ">", h, all_configs)
+    add("Standard Library", "C++ Standard Library", url_cpp, url_cpp + "/" + h, "", "<" + h + ">", h, all_configs)
 
 for h in [
     "shared_mutex",
 ]:
-    add("C++ Standard Library", "", "<" + h + ">", h, since_cpp14_configs)
+    add("Standard Library", "C++ Standard Library", url_cpp, url_cpp + "/" + h, "", "<" + h + ">", h, since_cpp14_configs)
 
 for h in [
     "any",
@@ -205,11 +217,13 @@ for h in [
         if (c.compiler.endswith("g++-7") or c.compiler.endswith("g++-8")) and h in ["memory_resource", "charconv", "execution"]:
             continue
 
-        add("C++ Standard Library", "", "<" + h + ">", h, [c])
+        add("Standard Library", "C++ Standard Library", url_cpp, url_cpp + "/" + h, "", "<" + h + ">", h, [c])
 
 
 # ===============================================================
 # c std
+
+url_c = "https://en.cppreference.com/w/c/header"
 
 for h in [
     "assert.h",
@@ -242,30 +256,63 @@ for h in [
     "wchar.h",
     "wctype.h",
 ]:
-    add("C Standard Library", "", "<" + h + ">", h, all_configs)
+    add("Standard Library", "C Standard Library", url_c, None, "", "<" + h + ">", h, all_configs)
 
 
 # ===============================================================
 # libs
 
-for lib in os.listdir("libs"):
-    if not os.path.isdir("libs/" + lib):
+debug_print("parsing libraries")
+
+for cat in os.listdir("libs"):
+    catpath = "libs/" + cat
+    if not os.path.isdir(catpath):
         continue
 
-    for v in os.listdir("libs/" + lib):
-        if not os.path.isdir("libs/" + lib + "/" + v):
+    debug_print("  " + catpath)
+
+    for lib in os.listdir(catpath):
+        libpath = catpath + "/" + lib
+        if not os.path.isdir(libpath):
             continue
 
-        for f in os.listdir("libs/" + lib + "/" + v):
-            path = "libs/" + lib + "/" + v + "/" + f
-            if not os.path.isfile(path):
+        debug_print("    " + libpath)
+
+        cfgpath = libpath + "/project.json"
+        assert os.path.exists(cfgpath), "no config found in " + cfgpath
+        with open(cfgpath, "r") as f:
+            cfg = json.load(f)
+        assert "url" in cfg, "project.json needs at least an URL"
+
+        for v in os.listdir(libpath):
+            vpath = libpath + "/" + v
+            if not os.path.isdir(vpath):
                 continue
 
-            ext = os.path.splitext(path)[-1]
-            if len(ext) < 2 or ext[1] not in ['c', 'h']:
-                continue
+            debug_print("      " + vpath)
 
-            add(lib, v, f, path, all_configs)
+            for (dirname, _, files) in os.walk(vpath):
+                for f in files:
+                    fpath = dirname + "/" + f
+                    rfpath = fpath[len(vpath)+1:]
+                    if not os.path.isfile(fpath):
+                        continue
+
+                    if "whitelist" in cfg and not rfpath in cfg["whitelist"]:
+                        debug_print("      " + fpath + " (" + rfpath + ") - IGNORED")
+                        continue
+
+                    debug_print("      " + fpath + " (" + rfpath + ")")
+
+                    ext = os.path.splitext(fpath)[-1]
+                    if len(ext) < 2 or ext[1] not in ['c', 'h']:
+                        continue
+
+                    furl = None
+                    if "file_url_pattern" in cfg:
+                        furl = cfg["file_url_pattern"].replace("$version", v).replace("$file", rfpath)
+
+                    add(cat, lib, cfg["url"], furl, v, rfpath, fpath, all_configs)
 
 
 # ===============================================================

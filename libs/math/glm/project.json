@@ -1,0 +1,13 @@
+{
+    "whitelist": [
+        "glm/glm.hpp",
+        "glm/ext.hpp",
+        "glm/fwd.hpp",
+        "glm/vec3.hpp",
+        "glm/vec4.hpp",
+        "glm/mat3x3.hpp",
+        "glm/mat4x4.hpp"
+    ],
+    "url": "https://github.com/g-truc/glm",
+    "file_url_pattern": "https://github.com/g-truc/glm/tree/$version/$file"
+}
