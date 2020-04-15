@@ -59,7 +59,7 @@ Frontend (https://artificial-mind.net/projects/compile-health/):
 
 * filter by C++ version / build type / compiler
 * add custom data client-side (like in speedscope)
-* make data.json slimmer and load 3rd party libs lazily
+* compress data.json and load 3rd party libs lazily
 
 Backend (this repo):
 
@@ -67,7 +67,7 @@ Backend (this repo):
 * support for generate jobs from cmake
 * support for Windows
 
-## Requires Dependencies
+## Required Dependencies
 
 For building all configured projects.
 
