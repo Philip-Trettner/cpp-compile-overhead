@@ -1,6 +1,8 @@
 {
-    "type": "files",
-    "whitelist": [
+    "type": "github",
+    "url": "https://github.com/g-truc/glm",
+    "working_dir": ".",
+    "files": [
         "glm/glm.hpp",
         "glm/ext.hpp",
         "glm/fwd.hpp",
@@ -9,6 +11,7 @@
         "glm/mat3x3.hpp",
         "glm/mat4x4.hpp"
     ],
-    "url": "https://github.com/g-truc/glm",
-    "file_url_pattern": "https://github.com/g-truc/glm/tree/$version/$file"
+    "versions": [
+        "0.9.9.8"
+    ]
 }

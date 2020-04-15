@@ -1,0 +1,36 @@
+{
+    "type": "gitlab",
+    "url": "https://gitlab.com/libeigen/eigen",
+    "working_dir": ".",
+    "files": [
+        "Eigen/Cholesky",
+        "Eigen/CholmodSupport",
+        "Eigen/Core",
+        "Eigen/Dense",
+        "Eigen/Eigen",
+        "Eigen/Eigenvalues",
+        "Eigen/Geometry",
+        "Eigen/Householder",
+        "Eigen/IterativeLinearSolvers",
+        "Eigen/Jacobi",
+        "Eigen/LU",
+        "Eigen/OrderingMethods",
+        "Eigen/QR",
+        "Eigen/SVD",
+        "Eigen/Sparse",
+        "Eigen/SparseCholesky",
+        "Eigen/SparseCore",
+        "Eigen/SparseLU",
+        "Eigen/SparseQR",
+        "Eigen/StdDeque",
+        "Eigen/StdList",
+        "Eigen/StdVector"
+    ],
+    "versions": [
+        "3.3"
+    ],
+    "args": [
+        "-I/usr/include/suitesparse",
+        "-I/usr/include"
+    ]
+}

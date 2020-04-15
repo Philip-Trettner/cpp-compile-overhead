@@ -1,0 +1,11 @@
+{
+    "type": "github",
+    "url": "https://github.com/kazuho/picojson",
+    "working_dir": ".",
+    "files": [
+        "picojson.h"
+    ],
+    "versions": [
+        "v1.3.0"
+    ]
+}

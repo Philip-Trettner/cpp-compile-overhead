@@ -1,0 +1,12 @@
+{
+    "type": "github",
+    "url": "https://github.com/lvandeve/lodepng",
+    "working_dir": ".",
+    "files": [
+        "lodepng.h",
+        "lodepng.cpp"
+    ],
+    "versions": [
+        "master"
+    ]
+}

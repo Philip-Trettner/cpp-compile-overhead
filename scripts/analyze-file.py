@@ -71,18 +71,19 @@ file_main = os.path.join(tmp_dir, "main.cc")
 baseline_main = os.path.join(tmp_dir, "baseline.cc")
 output_main = os.path.join(tmp_dir, "main.o")
 result = {}
-preproc_args = [compiler] + cargs + ["-I.", "-E", file_main, "-o", output_main]
-preproc_args_ = [compiler] + cargs + ["-I.", "-E", "main.cc", "-o", "main.o"]
-compile_args = [compiler] + cargs + ["-I.", "-c", file_main, "-o", output_main]
-compile_args_ = [compiler] + cargs + ["-I.", "-c", "main.cc", "-o", "main.o"]
+preproc_args = [compiler] + cargs + ["-E", file_main, "-o", output_main]
+preproc_args_ = [compiler] + cargs + ["-E", "main.cc", "-o", "main.o"]
+compile_args = [compiler] + cargs + ["-c", file_main, "-o", output_main]
+compile_args_ = [compiler] + cargs + ["-c", "main.cc", "-o", "main.o"]
 preproc_baseline_args = [compiler] + cargs + \
-    ["-I.", "-E", baseline_main, "-o", output_main]
+    ["-E", baseline_main, "-o", output_main]
 compile_baseline_args = [compiler] + cargs + \
-    ["-I.", "-c", baseline_main, "-o", output_main]
+    ["-c", baseline_main, "-o", output_main]
 
 result["preproc_cmd"] = " ".join(preproc_args_)
 result["compile_cmd"] = " ".join(compile_args_)
-result["compiler_version"] = subprocess.check_output([compiler, "--version"]).decode("utf-8").splitlines()[0]
+result["compiler_version"] = subprocess.check_output(
+    [compiler, "--version"]).decode("utf-8").splitlines()[0]
 
 # ============================================================
 # Create temporary files to compile
@@ -219,7 +220,8 @@ def measure_time(sargs):
             ts.sort()
             if ts[3] / ts[0] < 1.01:  # cheapest 4 deviate less than 1%
                 break
-        if len(ts) >= 3 and ts[0] > 1: # long compilations do not need many repetitions
+        # long compilations do not need many repetitions
+        if len(ts) >= 3 and ts[0] > 1:
             break
 
         t0 = time.perf_counter()

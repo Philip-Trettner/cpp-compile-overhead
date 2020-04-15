@@ -38,3 +38,18 @@ Backend (this repo):
 * add more 3rd party libraries
 * support for generate jobs from cmake
 * support for Windows
+
+## Requires Dependencies
+
+For building all configured projects.
+
+### Ubuntu / Debian
+
+```
+sudo apt install \
+libsuitesparse-dev \
+libmetis-dev \
+libcholmod3
+```
+
+(I probably missed a few)

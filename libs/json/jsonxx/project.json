@@ -1,0 +1,12 @@
+{
+    "type": "github",
+    "url": "https://github.com/hjiang/jsonxx",
+    "working_dir": ".",
+    "files": [
+        "jsonxx.cc",
+        "jsonxx.h"
+    ],
+    "versions": [
+        "master"
+    ]
+}

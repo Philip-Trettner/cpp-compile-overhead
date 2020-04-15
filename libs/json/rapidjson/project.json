@@ -1,0 +1,26 @@
+{
+    "type": "github",
+    "url": "https://github.com/Tencent/rapidjson",
+    "working_dir": "include",
+    "files": [
+        "rapidjson/fwd.h",
+        "rapidjson/rapidjson.h",
+        "rapidjson/document.h",
+        "rapidjson/writer.h",
+        "rapidjson/reader.h",
+        "rapidjson/prettywriter.h",
+        "rapidjson/pointer.h",
+        "rapidjson/schema.h",
+        "rapidjson/stream.h",
+        "rapidjson/istreamwrapper.h",
+        "rapidjson/ostreamwrapper.h",
+        "rapidjson/filereadstream.h",
+        "rapidjson/filewritestream.h",
+        "rapidjson/memorybuffer.h",
+        "rapidjson/memorystream.h",
+        "rapidjson/stringbuffer.h"
+    ],
+    "versions": [
+        "v1.1.0"
+    ]
+}

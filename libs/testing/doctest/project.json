@@ -1,5 +1,13 @@
 {
-    "type": "files",
+    "type": "github",
     "url": "https://github.com/onqtam/doctest",
-    "file_url_pattern": "https://github.com/onqtam/doctest/tree/$version/doctest/$file"
+    "working_dir": ".",
+    "files": [
+        "doctest/doctest.h",
+        "doctest/parts/doctest.cpp",
+        "doctest/parts/doctest_fwd.h"
+    ],
+    "versions": [
+        "2.3.7"
+    ]
 }

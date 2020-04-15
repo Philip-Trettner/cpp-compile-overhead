@@ -1,0 +1,11 @@
+{
+    "type": "github",
+    "url": "https://github.com/google/googletest",
+    "working_dir": "googletest/include",
+    "files": [
+        "gtest/gtest.h"
+    ],
+    "versions": [
+        "release-1.10.0"
+    ]
+}

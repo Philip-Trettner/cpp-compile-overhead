@@ -85,6 +85,7 @@ def generate_configs():
 
 
 all_configs = list(generate_configs())
+all_configs = [all_configs[0]] # DEBUG!
 since_cpp14_configs = [c for c in all_configs if c.cpp >= 14]
 since_cpp17_configs = [c for c in all_configs if c.cpp >= 17]
 
@@ -92,7 +93,7 @@ project_list = []
 project_jobs = {}
 
 
-def add(category, project, project_url, url, version, name, file, configs, cwd=None):
+def add(category, project, project_url, url, version, name, file, configs, cwd, *, extra_args=[]):
     if project not in project_jobs:
         project_list.append(project)
         project_jobs[project] = []
@@ -106,7 +107,7 @@ def add(category, project, project_url, url, version, name, file, configs, cwd=N
             "name": name,
             "file": file,
             "variant": c.variant,
-            "args": c.make_args(),
+            "args": c.make_args() + extra_args,
             "cpp": c.cpp,
             "compiler": c.compiler,
             "compiler_name": c.compiler_name,
@@ -204,13 +205,13 @@ if not args.project:
         "condition_variable",
     ]:
         add("Standard Library", "C++ Standard Library", url_cpp,
-            url_cpp + "/" + h, "", "<" + h + ">", h, all_configs)
+            url_cpp + "/" + h, "", "<" + h + ">", h, all_configs, args.dir)
 
     for h in [
         "shared_mutex",
     ]:
         add("Standard Library", "C++ Standard Library", url_cpp,
-            url_cpp + "/" + h, "", "<" + h + ">", h, since_cpp14_configs)
+            url_cpp + "/" + h, "", "<" + h + ">", h, since_cpp14_configs, args.dir)
 
     for h in [
         "any",
@@ -231,7 +232,7 @@ if not args.project:
                 continue
 
             add("Standard Library", "C++ Standard Library", url_cpp,
-                url_cpp + "/" + h, "", "<" + h + ">", h, [c])
+                url_cpp + "/" + h, "", "<" + h + ">", h, [c], args.dir)
 
     # ===============================================================
     # c std
@@ -270,7 +271,7 @@ if not args.project:
         "wctype.h",
     ]:
         add("Standard Library", "C Standard Library",
-            url_c, None, "", "<" + h + ">", h, all_configs)
+            url_c, None, "", "<" + h + ">", h, all_configs, args.dir)
 
 
 # ===============================================================
@@ -313,10 +314,16 @@ def add_project_files(cfg, cat, lib, libpath):
                         "$version", v).replace("$file", rfpath)
 
                 add(cat, lib, cfg["url"], furl, v,
-                    rfpath, fpath, all_configs, cwd=vpath)
+                    rfpath, rfpath, all_configs, cwd=vpath)
 
 
-def add_project_github(cfg, cat, lib, libpath):
+def make_github_file_url(cfg, v, f):
+    return os.path.join(cfg["url"], "blob", v, cfg["working_dir"], f)
+
+def make_gitlab_file_url(cfg, v, f):
+    return os.path.join(cfg["url"], "-", "blob", v, cfg["working_dir"], f)
+
+def add_project_git(cfg, cat, lib, libpath, make_file_url):
     assert "url" in cfg, "project.json needs at least an URL"
     global args
 
@@ -358,13 +365,20 @@ def add_project_github(cfg, cat, lib, libpath):
             # shutil.copytree(repo_working_dir, version_dir)
             distutils.dir_util.copy_tree(repo_working_dir, version_dir)
 
+    extra_args = []
+    if "args" in cfg:
+        extra_args = cfg["args"]
+
     for v in cfg["versions"]:
         for f in cfg["files"]:
             file_path = os.path.join(lib_tmp_dir, "versions", v, f)
             assert os.path.exists(file_path), "missing file?"
-            furl = os.path.join(cfg["url"], "tree", v, cfg["working_dir"], f)
-            add(cat, lib, cfg["url"], furl, v, f, file_path, all_configs, cwd=os.path.join(
-                lib_tmp_dir, "versions", v))
+            furl = make_file_url(cfg, v, f)
+            vname = v
+            if vname.startswith("release-"): # TODO properly
+                vname = vname[8:]
+            add(cat, lib, cfg["url"], furl, vname, f, f, all_configs, cwd=os.path.join(
+                lib_tmp_dir, "versions", v), extra_args=extra_args)
 
 
 for cat in os.listdir("libs"):
@@ -391,11 +405,14 @@ for cat in os.listdir("libs"):
             cfg = json.load(f)
         assert "type" in cfg, "no type specified in project.json"
 
-        if cfg["type"] == "files":
+        if cfg["type"] == "file":
             add_project_files(cfg, cat, lib, libpath)
 
         elif cfg["type"] == "github":
-            add_project_github(cfg, cat, lib, libpath)
+            add_project_git(cfg, cat, lib, libpath, make_github_file_url)
+
+        elif cfg["type"] == "gitlab":
+            add_project_git(cfg, cat, lib, libpath, make_gitlab_file_url)
 
         else:
             assert False, "unknown project type " + cfg["type"]

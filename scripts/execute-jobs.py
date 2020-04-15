@@ -80,7 +80,7 @@ done = 0
 for j in to_execute:
     id = j["cache-key"]
     sargs = [analyzer_script, "-c", j["compiler"],
-             "-d", args.dir, j["file"], "--"] + j["args"]
+             "-d", args.dir, j["file"], "--"] + j["args"] + ["-I" + j["working_dir"]]
     if args.verbose:
         print("[{}/{}] executing {}".format(done, len(to_execute), sargs))
     res = subprocess.check_output(sargs).decode("utf-8")

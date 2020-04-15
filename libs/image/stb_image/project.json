@@ -1,0 +1,5 @@
+{
+    "type": "file",
+    "url": "https://github.com/nothings/stb",
+    "file_url_pattern": "https://github.com/nothings/stb/blob/$version/$file"
+}
