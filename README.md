@@ -11,7 +11,7 @@ Results are hosted at https://artificial-mind.net/projects/compile-health/.
 ./generate-data.py some_directory
 ```
 
-This will create a `compile-health-data.json` in `some_directory` (along with a jobs file and a cache).
+This will create a `compile-health-data.json` in `some_directory` (along with a jobs file, a cache, and project files).
 
 ## Contributing
 
