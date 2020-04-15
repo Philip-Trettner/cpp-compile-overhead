@@ -16,6 +16,7 @@ parser.add_argument("file", metavar="F",
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
                     action="store_true")
 parser.add_argument("-p", "--project", help="only generate a specific project")
+parser.add_argument("-c", "--configs", type=int, help="only generate a limited number of configs")
 parser.add_argument("-d", "--dir", required=True,
                     help="tmp dir where downloaded sources are stored")
 
@@ -85,7 +86,9 @@ def generate_configs():
 
 
 all_configs = list(generate_configs())
-all_configs = [all_configs[0]] # DEBUG!
+if args.configs and args.configs < len(all_configs):
+    all_configs = all_configs[0:args.configs]
+
 since_cpp14_configs = [c for c in all_configs if c.cpp >= 14]
 since_cpp17_configs = [c for c in all_configs if c.cpp >= 17]
 
@@ -273,6 +276,94 @@ if not args.project:
         add("Standard Library", "C Standard Library",
             url_c, None, "", "<" + h + ">", h, all_configs, args.dir)
 
+    # ===============================================================
+    # c POSIX
+
+    for h in [
+        "aio.h",
+        "arpa/inet.h",
+        "assert.h",
+        "complex.h",
+        "cpio.h",
+        "ctype.h",
+        "dirent.h",
+        "dlfcn.h",
+        "errno.h",
+        "fcntl.h",
+        "fenv.h",
+        "float.h",
+        "fmtmsg.h",
+        "fnmatch.h",
+        "ftw.h",
+        "glob.h",
+        "grp.h",
+        "iconv.h",
+        "inttypes.h",
+        "iso646.h",
+        "langinfo.h",
+        "libgen.h",
+        "limits.h",
+        "locale.h",
+        "math.h",
+        "monetary.h",
+        "mqueue.h",
+        # "ndbm.h", missing on ubuntu
+        "net/if.h",
+        "netdb.h",
+        "netinet/in.h",
+        "netinet/tcp.h",
+        "nl_types.h",
+        "poll.h",
+        "pthread.h",
+        "pwd.h",
+        "regex.h",
+        "sched.h",
+        "search.h",
+        "semaphore.h",
+        "setjmp.h",
+        "signal.h",
+        "spawn.h",
+        "stdarg.h",
+        "stdbool.h",
+        "stddef.h",
+        "stdint.h",
+        "stdio.h",
+        "stdlib.h",
+        "string.h",
+        "strings.h",
+        "stropts.h",
+        "sys/ipc.h",
+        "sys/mman.h",
+        "sys/msg.h",
+        "sys/resource.h",
+        "sys/select.h",
+        "sys/sem.h",
+        "sys/shm.h",
+        "sys/socket.h",
+        "sys/stat.h",
+        "sys/statvfs.h",
+        "sys/time.h",
+        "sys/times.h",
+        "sys/types.h",
+        "sys/uio.h",
+        "sys/un.h",
+        "sys/utsname.h",
+        "sys/wait.h",
+        "syslog.h",
+        "tar.h",
+        "termios.h",
+        "tgmath.h",
+        "time.h",
+        "unistd.h",
+        "utime.h",
+        "utmpx.h",
+        "wchar.h",
+        "wctype.h",
+        "wordexp.h",
+    ]:
+        add("Standard Library", "C POSIX Library",
+            "https://en.wikipedia.org/wiki/C_POSIX_library", None, "", "<" + h + ">", h, all_configs, args.dir)
+
 
 # ===============================================================
 # libs
@@ -320,8 +411,10 @@ def add_project_files(cfg, cat, lib, libpath):
 def make_github_file_url(cfg, v, f):
     return os.path.join(cfg["url"], "blob", v, cfg["working_dir"], f)
 
+
 def make_gitlab_file_url(cfg, v, f):
     return os.path.join(cfg["url"], "-", "blob", v, cfg["working_dir"], f)
+
 
 def add_project_git(cfg, cat, lib, libpath, make_file_url):
     assert "url" in cfg, "project.json needs at least an URL"
@@ -375,7 +468,7 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
             assert os.path.exists(file_path), "missing file?"
             furl = make_file_url(cfg, v, f)
             vname = v
-            if vname.startswith("release-"): # TODO properly
+            if vname.startswith("release-"):  # TODO properly
                 vname = vname[8:]
             add(cat, lib, cfg["url"], furl, vname, f, f, all_configs, cwd=os.path.join(
                 lib_tmp_dir, "versions", v), extra_args=extra_args)

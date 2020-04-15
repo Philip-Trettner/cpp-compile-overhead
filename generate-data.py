@@ -9,6 +9,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument("dir", metavar="D",
                     help="directory to work in")
 parser.add_argument("--clear", help="clears cache if set", action="store_true")
+parser.add_argument("-c", "--configs", type=int, help="only generate a limited number of configs")
+parser.add_argument("-p", "--project",
+                    help="only build a specific project (e.g. -p picojson)")
 
 args = parser.parse_args()
 
@@ -23,8 +26,13 @@ if args.clear and os.path.exists(cache_file):
         f.write("{}")
 
 # generate jobs
+extra_args = []
+if args.project:
+    extra_args += ["-p", args.project]
+if args.configs:
+    extra_args += ["-c", str(args.configs)]
 subprocess.check_call(
-    ["python3", "scripts/generate-jobs.py", "-d", args.dir, jobs_file])
+    ["python3", "scripts/generate-jobs.py", "-d", args.dir, jobs_file] + extra_args)
 
 # execute jobs
 subprocess.check_call(["python3", "scripts/execute-jobs.py", "-v",

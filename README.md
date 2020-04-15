@@ -8,10 +8,38 @@ Results are hosted at https://artificial-mind.net/projects/compile-health/.
 ## Quickstart
 
 ```
-generate-data.py some_directory
+./generate-data.py some_directory
 ```
 
 This will create a `compile-health-data.json` in `some_directory` (along with a jobs file and a cache).
+
+## Contributing
+
+You are welcome to contribute by pull requests (really awesome persons) or via issues (just normal awesome persons).
+
+Github or Gitlab based projects can be easily added if the headers/sources individually compile without build system.
+A simple setup has a `project.json` like this:
+```
+{
+    "type": "github",
+    "url": "https://github.com/catchorg/Catch2",
+    "working_dir": "include",
+    "files": [
+        "catch.hpp"
+    ],
+    "versions": [
+        "v2.11.3"
+    ]
+}
+```
+
+Please test your PRs locally by at least running the following command on a Linux (preferably Ubuntu/Debian/Mint) machine:
+
+```
+./generate-data.py tmp -p your_new_project
+```
+
+(I will run merged PRs on my machine and push the results to https://artificial-mind.net/projects/compile-health/)
 
 
 ## Structure
