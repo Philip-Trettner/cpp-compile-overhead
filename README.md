@@ -37,3 +37,4 @@ Backend (this repo):
 
 * add more 3rd party libraries
 * support for generate jobs from cmake
+* support for Windows

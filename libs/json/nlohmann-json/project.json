@@ -1,4 +1,12 @@
 {
+    "type": "github",
     "url": "https://github.com/nlohmann/json",
-    "file_url_pattern": "https://github.com/nlohmann/json/tree/$version/include/nlohmann/$file"
+    "working_dir": "include",
+    "files": [
+        "nlohmann/json.hpp",
+        "nlohmann/json_fwd.hpp"
+    ],
+    "versions": [
+        "v3.7.3"
+    ]
 }

@@ -1,4 +1,5 @@
 {
+    "type": "files",
     "whitelist": [
         "glm/glm.hpp",
         "glm/ext.hpp",
