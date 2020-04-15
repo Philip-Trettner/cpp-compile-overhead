@@ -15,7 +15,7 @@ This will create a `compile-health-data.json` in `some_directory` (along with a 
 
 ## Contributing
 
-You are welcome to contribute by pull requests (really awesome persons) or via issues (just normal awesome persons).
+You are welcome to contribute by PR (really awesome persons) or via issues (just normal awesome persons).
 
 Github or Gitlab based projects can be easily added if the headers/sources individually compile without build system.
 A simple setup has a `project.json` like this:
