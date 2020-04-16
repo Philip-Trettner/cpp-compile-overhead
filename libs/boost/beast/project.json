@@ -1,0 +1,12 @@
+{
+    "enabled": false,
+    "type": "github",
+    "url": "https://github.com/boostorg/beast",
+    "working_dir": "include",
+    "files": [
+        "boost/beast.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

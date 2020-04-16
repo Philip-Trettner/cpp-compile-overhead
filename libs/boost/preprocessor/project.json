@@ -1,0 +1,11 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/preprocessor",
+    "working_dir": "include",
+    "files": [
+        "boost/preprocessor.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

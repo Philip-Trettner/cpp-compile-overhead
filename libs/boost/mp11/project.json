@@ -1,0 +1,11 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/mp11",
+    "working_dir": "include",
+    "files": [
+        "boost/mp11.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

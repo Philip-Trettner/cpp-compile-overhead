@@ -60,6 +60,7 @@ Frontend (https://artificial-mind.net/projects/compile-health/):
 * filter by C++ version / build type / compiler
 * add custom data client-side (like in speedscope)
 * compress data.json and load 3rd party libs lazily
+* on mobile, show table fullscreen and have extra text as overlay/hamburger menu, fix the horizontal scrolling of group headers
 
 Backend (this repo):
 

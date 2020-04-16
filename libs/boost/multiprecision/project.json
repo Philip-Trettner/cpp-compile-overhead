@@ -1,0 +1,31 @@
+{
+    "enabled": false,
+    "type": "github",
+    "url": "https://github.com/boostorg/multiprecision",
+    "working_dir": "include",
+    "files": [
+        "boost/multiprecision/complex128.hpp",
+        "boost/multiprecision/complex_adaptor.hpp",
+        "boost/multiprecision/cpp_bin_float.hpp",
+        "boost/multiprecision/cpp_complex.hpp",
+        "boost/multiprecision/cpp_dec_float.hpp",
+        "boost/multiprecision/cpp_int.hpp",
+        "boost/multiprecision/debug_adaptor.hpp",
+        "boost/multiprecision/eigen.hpp",
+        "boost/multiprecision/float128.hpp",
+        "boost/multiprecision/gmp.hpp",
+        "boost/multiprecision/integer.hpp",
+        "boost/multiprecision/logged_adaptor.hpp",
+        "boost/multiprecision/miller_rabin.hpp",
+        "boost/multiprecision/mpc.hpp",
+        "boost/multiprecision/mpfi.hpp",
+        "boost/multiprecision/mpfr.hpp",
+        "boost/multiprecision/number.hpp",
+        "boost/multiprecision/random.hpp",
+        "boost/multiprecision/rational_adaptor.hpp",
+        "boost/multiprecision/tommath.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

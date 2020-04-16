@@ -1,0 +1,11 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/asio",
+    "working_dir": "include",
+    "files": [
+        "boost/asio.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

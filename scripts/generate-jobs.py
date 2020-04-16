@@ -17,7 +17,8 @@ parser.add_argument("file", metavar="F",
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
                     action="store_true")
 parser.add_argument("-p", "--project", help="only generate a specific project")
-parser.add_argument("-c", "--configs", type=int, help="only generate a limited number of configs")
+parser.add_argument("-c", "--configs", type=int,
+                    help="only generate a limited number of configs")
 parser.add_argument("-d", "--dir", required=True,
                     help="tmp dir where downloaded sources are stored")
 
@@ -68,30 +69,52 @@ def generate_configs():
             if not os.path.exists(cc[1]):
                 continue
 
-            for cpp in [11, 14, 17]:
-                for variant in [
-                    ["Debug", ['-O0', '-g']],
-                    ["RelWithDebInfo", ['-O2', '-g', '-DNDEBUG']],
-                    ["Release", ['-O3', '-DNDEBUG']],
-                ]:
-                    c = Config()
-                    c.cpp = cpp
-                    c.args = variant[1] + ["-march=skylake"]
-                    c.variant = variant[0]
-                    c.compiler = cc[1]
-                    c.compiler_name = cc[0]
-                    yield c
+            variants = [
+                ["Debug", ['-O0', '-g']],
+                ["RelWithDebInfo", ['-O2', '-g', '-DNDEBUG']],
+                ["Release", ['-O3', '-DNDEBUG']],
+            ]
+
+            for libcpp in [False, True]:
+                if libcpp and not cc[0].startswith("Clang"):
+                    continue
+
+                if libcpp:
+                    continue # TODO: install multiple versions
+
+                extra_args = []
+                var_suffix = ""
+                if libcpp:
+                    extra_args.append('-stdlib=libc++')
+                    var_suffix = " (libc++)"
+
+                for cpp in [11, 14, 17]:
+                    for variant in variants:
+                        c = Config()
+                        c.cpp = cpp
+                        c.args = variant[1] + extra_args + ["-march=skylake"]
+                        c.variant = variant[0] + var_suffix
+                        c.compiler = cc[1]
+                        c.compiler_name = cc[0]
+                        yield c
 
     else:
         assert False, "unknown platform"
 
 
 all_configs = list(generate_configs())
-if args.configs and args.configs < len(all_configs):
-    all_configs = all_configs[0:args.configs]
 
 since_cpp14_configs = [c for c in all_configs if c.cpp >= 14]
 since_cpp17_configs = [c for c in all_configs if c.cpp >= 17]
+
+def truncate_cfgs(cfgs):
+    if args.configs and args.configs < len(cfgs):
+        cfgs = cfgs[0:args.configs]
+    return cfgs
+
+all_configs = truncate_cfgs(all_configs)
+since_cpp14_configs = truncate_cfgs(since_cpp14_configs)
+since_cpp17_configs = truncate_cfgs(since_cpp17_configs)
 
 project_list = []
 project_jobs = {}
@@ -424,6 +447,9 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
     assert "url" in cfg, "project.json needs at least an URL"
     global args
 
+    if "enabled" in cfg and not cfg["enabled"]:
+        return
+
     lib_tmp_dir = os.path.join(args.dir, libpath)
     repo_dir = os.path.join(lib_tmp_dir, "repo")
     debug_print("      .. repo in " + repo_dir)
@@ -432,10 +458,16 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
         debug_print("      .. running {}".format(git_args))
         subprocess.check_call(git_args)
 
+    files = []
+    for f in cfg["files"]:
+        assert "*" not in f, "globbing not supported"
+        files.append(f)
+    
+
     missing_versions = []
     for v in cfg["versions"]:
         any_missing = False
-        for f in cfg["files"]:
+        for f in files:
             file_path = os.path.join(lib_tmp_dir, "versions", v, f)
             if not os.path.exists(file_path):
                 any_missing = True
@@ -466,15 +498,26 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
     if "args" in cfg:
         extra_args = cfg["args"]
 
+    cfgs = all_configs
+    if "min-cpp" in cfg:
+        if cfg["min-cpp"] == 11:
+            cfgs = all_configs
+        elif cfg["min-cpp"] == 14:
+            cfgs = since_cpp14_configs
+        elif cfg["min-cpp"] == 17:
+            cfgs = since_cpp14_configs
+        else:
+            assert False, "unknown cpp min version"
+
     for v in cfg["versions"]:
-        for f in cfg["files"]:
+        for f in files:
             file_path = os.path.join(lib_tmp_dir, "versions", v, f)
             assert os.path.exists(file_path), "missing file?"
             furl = make_file_url(cfg, v, f)
             vname = v
             if vname.startswith("release-"):  # TODO properly
                 vname = vname[8:]
-            add(cat, lib, cfg["url"], furl, vname, f, f, all_configs, cwd=os.path.join(
+            add(cat, lib, cfg["url"], furl, vname, f, f, cfgs, cwd=os.path.join(
                 lib_tmp_dir, "versions", v), extra_args=extra_args)
 
 

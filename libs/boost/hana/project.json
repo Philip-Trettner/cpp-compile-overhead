@@ -1,0 +1,12 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/hana",
+    "working_dir": "include",
+    "files": [
+        "boost/hana.hpp"
+    ],
+    "versions": [
+        "v1.6.0"
+    ],
+    "min-cpp": 14
+}
