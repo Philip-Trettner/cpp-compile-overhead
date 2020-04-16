@@ -1,5 +1,6 @@
 {
     "type": "file",
     "url": "https://github.com/nothings/stb",
-    "file_url_pattern": "https://github.com/nothings/stb/blob/$version/$file"
+    "file_url_pattern": "https://github.com/nothings/stb/blob/$version/$file",
+    "no_url_for_files": ".*_impl\\.cc"
 }

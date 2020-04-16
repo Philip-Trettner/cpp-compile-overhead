@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import glob
 import os
 import argparse
@@ -403,6 +404,9 @@ def add_project_files(cfg, cat, lib, libpath):
                 if "file_url_pattern" in cfg:
                     furl = cfg["file_url_pattern"].replace(
                         "$version", v).replace("$file", rfpath)
+                if "no_url_for_files" in cfg:
+                    if re.fullmatch(cfg["no_url_for_files"], f):
+                        furl = None
 
                 add(cat, lib, cfg["url"], furl, v,
                     rfpath, rfpath, all_configs, cwd=vpath)

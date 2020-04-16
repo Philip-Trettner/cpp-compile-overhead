@@ -23,8 +23,87 @@ cache_file = args.cache
 job_cache = {}
 
 
+def build_result_data(results):
+    proj_list = []
+    variant_to_idx = {}
+    variants = []
+    cresult = {
+        "projects": proj_list,
+        "variants": variants
+    }
+    curr_proj = {"name": None, "version": None}
+    curr_files = None
+    curr_file = {"name": None}
+    curr_results = None
+    for j in results:
+        varid = j["compiler"] + " " + j["argstr"]
+        if varid not in variant_to_idx:
+            variant_to_idx[varid] = len(variants)
+            variants.append({
+                "name": j["variant"],
+                "compiler_name": j["compiler_name"],
+                "compiler_path": j["compiler"],
+                "compiler_version": j["compiler_version"],
+                "cpp": j["cpp"],
+                "args": j["argstr"],
+            })
+
+        if curr_proj["name"] != j["project"] or curr_proj["version"] != j["version"]:
+            curr_files = []
+            curr_file = {"name": None}
+            curr_proj = {
+                "name": j["project"],
+                "version": j["version"],
+                "url": j["project_url"],
+                "category": j["category"],
+                "files": curr_files,
+            }
+            proj_list.append(curr_proj)
+
+        if curr_file["name"] != j["name"]:
+            curr_results = []
+            curr_file = {
+                "name": j["name"],
+                "url": j["url"],
+                "results": curr_results
+            }
+            curr_files.append(curr_file)
+
+        curr_results.append([
+            variant_to_idx[varid],
+            int(1000 * j["compile_time"]),
+            int(1000 * j["compile_time_base"]),
+            int(1000 * j["preprocessing_time"]),
+            int(1000 * j["preprocessing_time_base"]),
+            j["line_count"],
+            j["line_count_raw"],
+            j["object_size"],
+            j["object_size_base"],
+            j["text_size"],
+            j["data_size"],
+            j["bss_size"],
+            j["string_size"],
+            j["code_symbol_size"],
+            j["data_symbol_size"],
+            j["weak_symbol_size"],
+            j["symbol_name_size"],
+            j["string_count"],
+            j["undefined_symbol_count"],
+            j["code_symbol_count"],
+            j["data_symbol_count"],
+            j["weak_symbol_count"],
+        ])
+
+    # TODO: proper gzipped result
+    # with gzip.GzipFile(args.result + ".gz", "w") as f:
+    #     f.write(json.dumps(results).encode("utf-8"))
+
+    return cresult
+
+
 # ===============================================
 # read jobs and cache
+
 
 with open(args.file, "r") as f:
     jobs = json.load(f)
@@ -71,7 +150,7 @@ for j in jobs:
 
 # write before
 with open(args.result, "w") as f:
-    json.dump(results, f)
+    json.dump(build_result_data(results), f)
 
 print("was able to reuse {} results from cache".format(found_cached))
 print("has to execute {} more jobs".format(len(to_execute)))
@@ -97,83 +176,7 @@ for j in to_execute:
     results.append(j)
     done += 1
 
-# compressing results
-
-proj_list = []
-variant_to_idx = {}
-variants = []
-cresult = {
-    "projects": proj_list,
-    "variants": variants
-}
-curr_proj = {"name": None, "version": None}
-curr_files = None
-curr_file = {"name": None}
-curr_results = None
-for j in results:
-    varid = j["compiler"] + " " + j["argstr"]
-    if varid not in variant_to_idx:
-        variant_to_idx[varid] = len(variants)
-        variants.append({
-            "name": j["variant"],
-            "compiler_name": j["compiler_name"],
-            "compiler_path": j["compiler"],
-            "compiler_version": j["compiler_version"],
-            "cpp": j["cpp"],
-            "args": j["argstr"],
-        })
-
-    if curr_proj["name"] != j["project"] or curr_proj["version"] != j["version"]:
-        curr_files = []
-        curr_file = {"name": None}
-        curr_proj = {
-            "name": j["project"],
-            "version": j["version"],
-            "url": j["project_url"],
-            "category": j["category"],
-            "files": curr_files,
-        }
-        proj_list.append(curr_proj)
-
-    if curr_file["name"] != j["name"]:
-        curr_results = []
-        curr_file = {
-            "name": j["name"],
-            "url": j["url"],
-            "results": curr_results
-        }
-        curr_files.append(curr_file)
-
-    curr_results.append([
-        variant_to_idx[varid],
-        int(1000 * j["compile_time"]),
-        int(1000 * j["compile_time_base"]),
-        int(1000 * j["preprocessing_time"]),
-        int(1000 * j["preprocessing_time_base"]),
-        j["line_count"],
-        j["line_count_raw"],
-        j["object_size"],
-        j["object_size_base"],
-        j["text_size"],
-        j["data_size"],
-        j["bss_size"],
-        j["string_size"],
-        j["code_symbol_size"],
-        j["data_symbol_size"],
-        j["weak_symbol_size"],
-        j["symbol_name_size"],
-        j["string_count"],
-        j["undefined_symbol_count"],
-        j["code_symbol_count"],
-        j["data_symbol_count"],
-        j["weak_symbol_count"],
-    ])
-
-
-# TODO: proper gzipped result
-# with gzip.GzipFile(args.result + ".gz", "w") as f:
-#     f.write(json.dumps(results).encode("utf-8"))
 
 # write after
 with open(args.result, "w") as f:
-    json.dump(cresult, f)
+    json.dump(build_result_data(results), f)

@@ -91,7 +91,7 @@ result["compiler_version"] = subprocess.check_output(
 with open(file_main, "w") as f:
     f.writelines([
         "#include <" + file + ">\n",
-        "struct bar { int y; int x() { return y + 3; } }; int foo(int, int) { return 3; } int main() { return 0; }\n"
+        "int main() { return 0; }\n"
     ])
 
 with open(baseline_main, "w") as f:
@@ -217,18 +217,18 @@ def measure_time(sargs):
         if len(ts) > 10:
             break
         if len(ts) >= 8:
-            ts.sort()
             if ts[3] / ts[0] < 1.01:  # cheapest 4 deviate less than 1%
                 break
         # long compilations do not need many repetitions
-        if len(ts) >= 3 and ts[0] > 1:
+        if len(ts) >= 3 and ts[0] > 0.5:
             break
 
         t0 = time.perf_counter()
         subprocess.call(sargs)
         t1 = time.perf_counter()
         ts.append(t1 - t0)
-    ts.sort()
+        ts.sort()
+
     return ts[0]
 
 
