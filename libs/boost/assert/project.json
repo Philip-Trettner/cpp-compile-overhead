@@ -1,0 +1,12 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/assert",
+    "working_dir": "include",
+    "files": [
+        "boost/assert.hpp",
+        "boost/current_function.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

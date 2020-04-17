@@ -1,0 +1,33 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/container",
+    "working_dir": "include",
+    "files": [
+        "boost/container/allocator.hpp",
+        "boost/container/scoped_allocator.hpp",
+        "boost/container/adaptive_pool.hpp",
+        "boost/container/container_fwd.hpp",
+        "boost/container/deque.hpp",
+        "boost/container/flat_map.hpp",
+        "boost/container/flat_set.hpp",
+        "boost/container/list.hpp",
+        "boost/container/map.hpp",
+        "boost/container/set.hpp",
+        "boost/container/slist.hpp",
+        "boost/container/small_vector.hpp",
+        "boost/container/stable_vector.hpp",
+        "boost/container/static_vector.hpp",
+        "boost/container/string.hpp",
+        "boost/container/pmr/memory_resource.hpp",
+        "boost/container/pmr/polymorphic_allocator.hpp",
+        "boost/container/vector.hpp"
+    ],
+    "dependencies": {
+        "https://github.com/boostorg/config": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/move": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/intrusive": { "version": "*", "dir": "include" }
+    },
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

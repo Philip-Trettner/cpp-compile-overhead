@@ -24,6 +24,12 @@
     "boost/json/value.hpp",
     "boost/json/value_ref.hpp"
   ],
+  "dependencies": {
+    "https://github.com/boostorg/config": {
+      "version": "boost-1.72.0",
+      "dir": "include"
+    }
+  },
   "versions": [
     "develop"
   ]

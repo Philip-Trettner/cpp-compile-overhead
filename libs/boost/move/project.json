@@ -1,0 +1,18 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/move",
+    "working_dir": "include",
+    "files": [
+        "boost/move/move.hpp",
+        "boost/move/core.hpp",
+        "boost/move/make_unique.hpp",
+        "boost/move/traits.hpp",
+        "boost/move/utility.hpp",
+        "boost/move/iterator.hpp",
+        "boost/move/algorithm.hpp",
+        "boost/move/unique_ptr.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

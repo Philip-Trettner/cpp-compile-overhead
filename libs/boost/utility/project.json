@@ -1,0 +1,28 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/utility",
+    "working_dir": "include",
+    "files": [
+        "boost/utility.hpp",
+        "boost/operators.hpp",
+        "boost/operators_v1.hpp",
+        "boost/compressed_pair.hpp",
+        "boost/call_traits.hpp",
+        "boost/utility/string_view.hpp",
+        "boost/utility/string_view_fwd.hpp",
+        "boost/utility/base_from_member.hpp",
+        "boost/utility/result_of.hpp",
+        "boost/utility/string_ref.hpp",
+        "boost/utility/string_ref_fwd.hpp",
+        "boost/utility/identity_type.hpp",
+        "boost/utility/binary.hpp",
+        "boost/utility/compare_pointees.hpp",
+        "boost/utility/value_init.hpp"
+    ],
+    "dependencies": {
+        "https://github.com/boostorg/container_hash": { "version": "*", "dir": "include" }
+    },
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

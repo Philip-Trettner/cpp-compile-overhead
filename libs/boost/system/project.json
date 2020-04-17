@@ -1,0 +1,18 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/system",
+    "working_dir": "include",
+    "files": [
+        "boost/cerrno.hpp",
+        "boost/system/api_config.hpp",
+        "boost/system/config.hpp",
+        "boost/system/cygwin_error.hpp",
+        "boost/system/error_code.hpp",
+        "boost/system/linux_error.hpp",
+        "boost/system/system_error.hpp",
+        "boost/system/windows_error.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/intrusive",
+    "working_dir": "include",
+    "files": [
+        "boost/intrusive/hashtable.hpp",
+        "boost/intrusive/list.hpp",
+        "boost/intrusive/avl_set.hpp",
+        "boost/intrusive/avltree.hpp",
+        "boost/intrusive/intrusive_fwd.hpp",
+        "boost/intrusive/rbtree.hpp",
+        "boost/intrusive/set.hpp",
+        "boost/intrusive/sgtree.hpp",
+        "boost/intrusive/slist.hpp",
+        "boost/intrusive/splay_set.hpp",
+        "boost/intrusive/splaytree.hpp",
+        "boost/intrusive/treap.hpp",
+        "boost/intrusive/treap_set.hpp",
+        "boost/intrusive/unordered_set.hpp",
+        "boost/intrusive/bstree.hpp"
+    ],
+    "dependencies": {
+        "https://github.com/boostorg/move": { "version": "*", "dir": "include" }
+    },
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

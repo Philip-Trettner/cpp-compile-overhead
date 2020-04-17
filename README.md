@@ -69,7 +69,7 @@ Backend (this repo):
 * support for generate jobs from cmake
 * support for Windows
 * test different standard libraries (`libc++` vs `libstdc++`)
-* get size of debug symbols
+* get size of debug symbols (e.g. using `strip -g`)
 
 ## Required Dependencies
 

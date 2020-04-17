@@ -80,7 +80,7 @@ def generate_configs():
                     continue
 
                 if libcpp:
-                    continue # TODO: install multiple versions
+                    continue  # TODO: install multiple versions
 
                 extra_args = []
                 var_suffix = ""
@@ -107,10 +107,12 @@ all_configs = list(generate_configs())
 since_cpp14_configs = [c for c in all_configs if c.cpp >= 14]
 since_cpp17_configs = [c for c in all_configs if c.cpp >= 17]
 
+
 def truncate_cfgs(cfgs):
     if args.configs and args.configs < len(cfgs):
         cfgs = cfgs[0:args.configs]
     return cfgs
+
 
 all_configs = truncate_cfgs(all_configs)
 since_cpp14_configs = truncate_cfgs(since_cpp14_configs)
@@ -390,10 +392,26 @@ if not args.project:
 
 
 # ===============================================================
+# stdlibs
+
+# TODO: properly get source for different stdlibs
+# debug_print("getting standard libraries")
+# 
+# def get_stdlib(url, versions, name):
+#     global args
+#     repo_dir = os.path.join(args.dir, "stdlibs", name)
+#     if not os.path.exists(repo_dir):
+#         git_args = ["git", "clone", url, repo_dir]
+#         debug_print(" .. getting stdlib via " + repo_dir)
+#         subprocess.check_call(git_args)
+#         
+# get_stdlib("git://gcc.gnu.org/git/gcc.git", [], "libcstd++")
+
+
+# ===============================================================
 # libs
 
 debug_print("parsing libraries")
-
 
 def add_project_files(cfg, cat, lib, libpath):
     assert "url" in cfg, "project.json needs at least an URL"
@@ -443,6 +461,56 @@ def make_gitlab_file_url(cfg, v, f):
     return os.path.join(cfg["url"], "-", "blob", v, cfg["working_dir"], f)
 
 
+fetched_repos = set()
+
+
+def get_repo_files(url, version, base_dir, target_dir):
+    global args
+    global fetched_repos
+
+    debug_print("      .. getting files from " + url)
+
+    urltype = None
+    # e.g. https://github.com/boostorg/config
+    if url.startswith("https://github.com"):
+        urltype = "github"
+        m = re.fullmatch(r"https://github\.com/([\w-]+)/([\w-]+)/?", url)
+        assert m is not None, "malformed url"
+        user = m.group(1)
+        proj = m.group(2)
+
+    # e.g. https://gitlab.com/libeigen/eigen
+    elif url.startswith("https://gitlab.com"):
+        urltype = "gitlab"
+        m = re.fullmatch(r"https://gitlab\.com/([\w-]+)/([\w-]+)", url)
+        assert m is not None, "malformed url"
+        user = m.group(1)
+        proj = m.group(2)
+
+    else:
+        assert False, "unknown/unsupported repo"
+
+    repo_dir = os.path.join(args.dir, "repos", urltype, user, proj)
+    debug_print("      .. repo in " + repo_dir)
+    if not os.path.exists(repo_dir):
+        git_args = ["git", "clone", url, repo_dir]
+        debug_print("      .. running {}".format(git_args))
+        subprocess.check_call(git_args)
+
+    if not url in fetched_repos:  # only fetch once
+        debug_print("      .. git fetch")
+        subprocess.check_call(["git", "fetch"], cwd=repo_dir)
+        fetched_repos.add(url)
+
+    debug_print("      .. getting version " + version)
+    subprocess.check_call(["git", "checkout", version], cwd=repo_dir)
+
+    src_dir = os.path.join(repo_dir, base_dir)
+    debug_print("      .. copy {} to {}".format(src_dir, target_dir))
+
+    distutils.dir_util.copy_tree(src_dir, target_dir)
+
+
 def add_project_git(cfg, cat, lib, libpath, make_file_url):
     assert "url" in cfg, "project.json needs at least an URL"
     global args
@@ -451,48 +519,43 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
         return
 
     lib_tmp_dir = os.path.join(args.dir, libpath)
-    repo_dir = os.path.join(lib_tmp_dir, "repo")
-    debug_print("      .. repo in " + repo_dir)
-    if not os.path.exists(repo_dir):
-        git_args = ["git", "clone", "--recursive", cfg["url"], repo_dir]
-        debug_print("      .. running {}".format(git_args))
-        subprocess.check_call(git_args)
 
     files = []
     for f in cfg["files"]:
         assert "*" not in f, "globbing not supported"
         files.append(f)
-    
 
     missing_versions = []
     for v in cfg["versions"]:
         any_missing = False
         for f in files:
-            file_path = os.path.join(lib_tmp_dir, "versions", v, f)
+            file_path = os.path.join(lib_tmp_dir, "versions", v, "src", f)
             if not os.path.exists(file_path):
                 any_missing = True
                 break
         if any_missing:
             missing_versions.append(v)
 
-    if len(missing_versions) > 0:
-        debug_print("      .. missing files for {}".format(missing_versions))
+    for v in missing_versions:
+        debug_print("      .. getting version " + v)
 
-        assert os.path.exists(repo_dir)
-        debug_print("      .. git fetch")
-        subprocess.check_call(["git", "fetch"], cwd=repo_dir)
+        version_dir = os.path.join(lib_tmp_dir, "versions", v, "src")
+        get_repo_files(cfg["url"], v, cfg["working_dir"], version_dir)
 
-        for v in missing_versions:
-            debug_print("      .. getting version " + v)
-            subprocess.check_call(["git", "checkout", v], cwd=repo_dir)
+        # get dependencies
+        if "dependencies" in cfg:
+            for dep_url in cfg["dependencies"]:
+                dep_cfg = cfg["dependencies"][dep_url]
+                assert "version" in dep_cfg
+                assert "dir" in dep_cfg
 
-            version_dir = os.path.join(lib_tmp_dir, "versions", v)
-            repo_working_dir = os.path.join(repo_dir, cfg["working_dir"])
-            debug_print("      .. copy {} to {}".format(
-                repo_working_dir, version_dir))
-            # os.makedirs(version_dir)
-            # shutil.copytree(repo_working_dir, version_dir)
-            distutils.dir_util.copy_tree(repo_working_dir, version_dir)
+                dep_version = dep_cfg["version"]
+                if dep_version == "*":
+                    dep_version = v
+
+                dep_dir = os.path.join(lib_tmp_dir, "versions", v, "deps")
+                get_repo_files(dep_url, dep_version, dep_cfg["dir"], dep_dir)
+
 
     extra_args = []
     if "args" in cfg:
@@ -511,12 +574,17 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
 
     for v in cfg["versions"]:
         for f in files:
-            file_path = os.path.join(lib_tmp_dir, "versions", v, f)
-            assert os.path.exists(file_path), "missing file?"
+            file_path = os.path.join(lib_tmp_dir, "versions", v, "src", f)
+            if not os.path.exists(file_path):
+                print("missing file " + file_path)
+                assert False, "missing file"
             furl = make_file_url(cfg, v, f)
+
             vname = v
-            if vname.startswith("release-"):  # TODO properly
-                vname = vname[8:]
+            for s in ["release-", "boost-"]:   # TODO configurable
+                if vname.startswith(s):
+                    vname = vname[len(s):]
+                    
             add(cat, lib, cfg["url"], furl, vname, f, f, cfgs, cwd=os.path.join(
                 lib_tmp_dir, "versions", v), extra_args=extra_args)
 

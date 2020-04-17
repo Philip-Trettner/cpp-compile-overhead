@@ -1,0 +1,15 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/config",
+    "working_dir": "include",
+    "files": [
+        "boost/config.hpp",
+        "boost/cstdint.hpp",
+        "boost/limits.hpp",
+        "boost/cxx11_char_types.hpp",
+        "boost/version.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

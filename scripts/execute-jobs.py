@@ -159,7 +159,9 @@ done = 0
 for j in to_execute:
     id = j["cache-key"]
     sargs = [analyzer_script, "-c", j["compiler"],
-             "-d", args.dir, j["file"], "--"] + j["args"] + ["-I" + j["working_dir"]]
+             "-d", args.dir, j["file"], "--"] + j["args"]
+    sargs += ["-I" + j["working_dir"] + "/src"]
+    sargs += ["-I" + j["working_dir"] + "/deps"]
     if args.verbose:
         print("[{}/{}] executing '{}'".format(done, len(to_execute), " ".join(sargs)))
     res = subprocess.check_output(sargs).decode("utf-8")

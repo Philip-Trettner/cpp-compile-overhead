@@ -1,0 +1,15 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/container_hash",
+    "working_dir": "include",
+    "files": [
+        "boost/container_hash/hash.hpp",
+        "boost/container_hash/hash_fwd.hpp",
+        "boost/container_hash/extensions.hpp",
+        "boost/functional/hash.hpp",
+        "boost/functional/hash_fwd.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

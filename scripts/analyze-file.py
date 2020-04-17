@@ -59,6 +59,7 @@ assert os.path.exists(tmp_dir), "tmp dir does not exist"
 tmp_dir = os.path.abspath(tmp_dir)
 
 cargs = args.args
+# cargs += ["-nostdinc"]
 debug_print("{} additional arguments".format(len(cargs)))
 for a in cargs:
     debug_print("  {}".format(a))
