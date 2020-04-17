@@ -1,0 +1,18 @@
+{
+    "type": "github",
+    "url": "https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh",
+    "working_dir": "src",
+    "files": [
+        "OpenMesh/Core/Mesh/TriMeshT.hh",
+        "OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh",
+        "OpenMesh/Core/Mesh/PolyMeshT.hh",
+        "OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh",
+        "OpenMesh/Core/Mesh/TriConnectivity.hh",
+        "OpenMesh/Core/Mesh/PolyConnectivity.hh",
+        "OpenMesh/Core/Mesh/ArrayKernel.hh"
+    ],
+    "versions": [
+        "OpenMesh-8.0"
+    ],
+    "version-prefix": "OpenMesh-"
+}
