@@ -253,9 +253,9 @@ if not args.project:
         for c in since_cpp17_configs:
             if h in ["memory_resource", "execution"] and "clang" in c.compiler:
                 continue
-            if c.compiler.endswith("g++-7") and h == "filesystem":
+            if c.compiler.endswith("/g++-7") and h == "filesystem":
                 continue
-            if (c.compiler.endswith("g++-7") or c.compiler.endswith("g++-8")) and h in ["memory_resource", "charconv", "execution"]:
+            if (c.compiler.endswith("/g++-7") or c.compiler.endswith("/g++-8")) and h in ["memory_resource", "charconv", "execution"]:
                 continue
 
             add("Standard Library", "C++ Standard Library", url_cpp,
