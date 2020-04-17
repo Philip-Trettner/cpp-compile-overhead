@@ -1,0 +1,30 @@
+{
+  "type": "github",
+  "url": "https://github.com/CPPAlliance/json",
+  "working_dir": "include",
+  "files": [
+    "boost/json.hpp",
+    "boost/pilfer.hpp",
+    "boost/json/array.hpp",
+    "boost/json/basic_parser.hpp",
+    "boost/json/config.hpp",
+    "boost/json/error.hpp",
+    "boost/json/kind.hpp",
+    "boost/json/monotonic_resource.hpp",
+    "boost/json/number_cast.hpp",
+    "boost/json/object.hpp",
+    "boost/json/parser.hpp",
+    "boost/json/serializer.hpp",
+    "boost/json/src.hpp",
+    "boost/json/storage_ptr.hpp",
+    "boost/json/string.hpp",
+    "boost/json/to_value.hpp",
+    "boost/json/traits.hpp",
+    "boost/json/value_cast.hpp",
+    "boost/json/value.hpp",
+    "boost/json/value_ref.hpp"
+  ],
+  "versions": [
+    "develop"
+  ]
+}
