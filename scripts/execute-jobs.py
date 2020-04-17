@@ -161,7 +161,7 @@ for j in to_execute:
     sargs = [analyzer_script, "-c", j["compiler"],
              "-d", args.dir, j["file"], "--"] + j["args"] + ["-I" + j["working_dir"]]
     if args.verbose:
-        print("[{}/{}] executing {}".format(done, len(to_execute), " ".join(sargs)))
+        print("[{}/{}] executing '{}'".format(done, len(to_execute), " ".join(sargs)))
     res = subprocess.check_output(sargs).decode("utf-8")
     res = json.loads(res)
     job_cache[id] = res

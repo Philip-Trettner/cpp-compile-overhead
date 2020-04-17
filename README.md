@@ -61,6 +61,7 @@ Frontend (https://artificial-mind.net/projects/compile-health/):
 * add custom data client-side (like in speedscope)
 * compress data.json and load 3rd party libs lazily
 * on mobile, show table fullscreen and have extra text as overlay/hamburger menu, fix the horizontal scrolling of group headers
+* a "how to reproduce" option (test file + exact commands)
 
 Backend (this repo):
 
@@ -68,6 +69,7 @@ Backend (this repo):
 * support for generate jobs from cmake
 * support for Windows
 * test different standard libraries (`libc++` vs `libstdc++`)
+* get size of debug symbols
 
 ## Required Dependencies
 
