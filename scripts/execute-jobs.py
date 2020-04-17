@@ -127,7 +127,8 @@ to_execute = []
 
 for j in jobs:
     id = []
-    id.append(j["version"])
+    if j["version"] != "":
+        id.append(j["version"])
     id.append(j["file"])
     id.append(j["compiler"])
     id += j["args"]
