@@ -396,7 +396,7 @@ if not args.project:
 
 # TODO: properly get source for different stdlibs
 # debug_print("getting standard libraries")
-# 
+#
 # def get_stdlib(url, versions, name):
 #     global args
 #     repo_dir = os.path.join(args.dir, "stdlibs", name)
@@ -404,7 +404,7 @@ if not args.project:
 #         git_args = ["git", "clone", url, repo_dir]
 #         debug_print(" .. getting stdlib via " + repo_dir)
 #         subprocess.check_call(git_args)
-#         
+#
 # get_stdlib("git://gcc.gnu.org/git/gcc.git", [], "libcstd++")
 
 
@@ -412,6 +412,7 @@ if not args.project:
 # libs
 
 debug_print("parsing libraries")
+
 
 def add_project_files(cfg, cat, lib, libpath):
     assert "url" in cfg, "project.json needs at least an URL"
@@ -487,6 +488,14 @@ def get_repo_files(url, version, base_dir, target_dir):
         user = m.group(1)
         proj = m.group(2)
 
+    # e.g. https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh
+    elif url.startswith("https://graphics.rwth-aachen.de:9000"):
+        urltype = "rwth-graphics"
+        m = re.fullmatch(r"https://graphics\.rwth-aachen\.de:9000/([\w-]+)/([\w-]+)", url)
+        assert m is not None, "malformed url"
+        user = m.group(1)
+        proj = m.group(2)
+
     else:
         assert False, "unknown/unsupported repo"
 
@@ -556,7 +565,6 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
                 dep_dir = os.path.join(lib_tmp_dir, "versions", v, "deps")
                 get_repo_files(dep_url, dep_version, dep_cfg["dir"], dep_dir)
 
-
     extra_args = []
     if "args" in cfg:
         extra_args = cfg["args"]
@@ -581,10 +589,17 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
             furl = make_file_url(cfg, v, f)
 
             vname = v
-            for s in ["release-", "boost-"]:   # TODO configurable
+            for s in [  # TODO configurable
+                "release-",
+                "release/",
+                "boost-",
+            ]:
                 if vname.startswith(s):
                     vname = vname[len(s):]
-                    
+
+            if "version-prefix" in cfg and vname.startswith(cfg["version-prefix"]):
+                vname = vname[len(cfg["version-prefix"]):]
+
             add(cat, lib, cfg["url"], furl, vname, f, f, cfgs, cwd=os.path.join(
                 lib_tmp_dir, "versions", v), extra_args=extra_args)
 
