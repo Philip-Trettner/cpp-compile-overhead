@@ -122,7 +122,7 @@ project_list = []
 project_jobs = {}
 
 
-def add(category, project, project_url, url, version, name, file, configs, cwd, *, extra_args=[]):
+def add(category, project, project_url, url, version, name, file, configs, cwd, *, extra_args=[], include_dirs=[]):
     if project not in project_jobs:
         project_list.append(project)
         project_jobs[project] = []
@@ -138,6 +138,7 @@ def add(category, project, project_url, url, version, name, file, configs, cwd, 
             "variant": c.variant,
             "args": c.make_args() + extra_args,
             "cpp": c.cpp,
+            "include_dirs": include_dirs,
             "compiler": c.compiler,
             "compiler_name": c.compiler_name,
             "working_dir": cwd
@@ -451,7 +452,7 @@ def add_project_files(cfg, cat, lib, libpath):
                         furl = None
 
                 add(cat, lib, cfg["url"], furl, v,
-                    rfpath, rfpath, all_configs, cwd=vpath)
+                    rfpath, rfpath, all_configs, vpath, include_dirs=[vpath])
 
 
 def make_github_file_url(cfg, v, f):
@@ -491,7 +492,8 @@ def get_repo_files(url, version, base_dir, target_dir):
     # e.g. https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh
     elif url.startswith("https://graphics.rwth-aachen.de:9000"):
         urltype = "rwth-graphics"
-        m = re.fullmatch(r"https://graphics\.rwth-aachen\.de:9000/([\w-]+)/([\w-]+)", url)
+        m = re.fullmatch(
+            r"https://graphics\.rwth-aachen\.de:9000/([\w-]+)/([\w-]+)", url)
         assert m is not None, "malformed url"
         user = m.group(1)
         proj = m.group(2)
@@ -600,8 +602,11 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
             if "version-prefix" in cfg and vname.startswith(cfg["version-prefix"]):
                 vname = vname[len(cfg["version-prefix"]):]
 
-            add(cat, lib, cfg["url"], furl, vname, f, f, cfgs, cwd=os.path.join(
-                lib_tmp_dir, "versions", v), extra_args=extra_args)
+            src_dir = os.path.join(lib_tmp_dir, "versions", v, "src")
+            dep_dir = os.path.join(lib_tmp_dir, "versions", v, "deps")
+
+            add(cat, lib, cfg["url"], furl, vname, f, f, cfgs, os.path.join(
+                lib_tmp_dir, "versions", v), extra_args=extra_args, include_dirs=[src_dir, dep_dir])
 
 
 for cat in os.listdir("libs"):

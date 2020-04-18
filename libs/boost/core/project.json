@@ -1,0 +1,53 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/core",
+    "working_dir": "include",
+    "files": [
+        "boost/checked_delete.hpp",
+        "boost/get_pointer.hpp",
+        "boost/iterator.hpp",
+        "boost/non_type.hpp",
+        "boost/noncopyable.hpp",
+        "boost/ref.hpp",
+        "boost/swap.hpp",
+        "boost/type.hpp",
+        "boost/visit_each.hpp",
+
+        "boost/core/addressof.hpp",
+        "boost/core/alloc_construct.hpp",
+        "boost/core/checked_delete.hpp",
+        "boost/core/default_allocator.hpp",
+        "boost/core/demangle.hpp",
+        "boost/core/empty_value.hpp",
+        "boost/core/enable_if.hpp",
+        "boost/core/exchange.hpp",
+        "boost/core/explicit_operator_bool.hpp",
+        "boost/core/first_scalar.hpp",
+        "boost/core/ignore_unused.hpp",
+        "boost/core/is_same.hpp",
+        "boost/core/lightweight_test.hpp",
+        "boost/core/lightweight_test_trait.hpp",
+        "boost/core/no_exceptions_support.hpp",
+        "boost/core/noinit_adaptor.hpp",
+        "boost/core/noncopyable.hpp",
+        "boost/core/null_deleter.hpp",
+        "boost/core/nvp.hpp",
+        "boost/core/pointer_traits.hpp",
+        "boost/core/quick_exit.hpp",
+        "boost/core/ref.hpp",
+        "boost/core/scoped_enum.hpp",
+        "boost/core/swap.hpp",
+        "boost/core/typeinfo.hpp",
+        "boost/core/uncaught_exceptions.hpp",
+        "boost/core/underlying_type.hpp",
+        "boost/core/use_default.hpp",
+
+        "boost/utility/addressof.hpp",
+        "boost/utility/enable_if.hpp",
+        "boost/utility/explicit_operator_bool.hpp",
+        "boost/utility/swap.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/log",
+    "working_dir": "include",
+    "files": [
+        "boost/log/attributes.hpp",
+        "boost/log/common.hpp",
+        "boost/log/core.hpp",
+        "boost/log/exceptions.hpp",
+        "boost/log/expressions.hpp",
+        "boost/log/sinks.hpp",
+        "boost/log/trivial.hpp"
+    ],
+    "dependencies": {
+        "https://github.com/boostorg/core": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/config": { "version": "*", "dir": "include" }
+    },
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

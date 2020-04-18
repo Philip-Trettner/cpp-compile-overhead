@@ -1,0 +1,14 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/static_string",
+    "working_dir": "include",
+    "files": [
+        "boost/static_string.hpp"
+    ],
+    "dependencies": {
+        "https://github.com/boostorg/container_hash": { "version": "*", "dir": "include" }
+    },
+    "versions": [
+        "develop"
+    ]
+}

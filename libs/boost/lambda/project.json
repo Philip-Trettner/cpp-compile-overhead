@@ -1,0 +1,23 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/lambda",
+    "working_dir": "include",
+    "files": [
+        "boost/lambda/algorithm.hpp",
+        "boost/lambda/bind.hpp",
+        "boost/lambda/casts.hpp",
+        "boost/lambda/closures.hpp",
+        "boost/lambda/construct.hpp",
+        "boost/lambda/control_structures.hpp",
+        "boost/lambda/core.hpp",
+        "boost/lambda/exceptions.hpp",
+        "boost/lambda/if.hpp",
+        "boost/lambda/lambda.hpp",
+        "boost/lambda/loops.hpp",
+        "boost/lambda/numeric.hpp",
+        "boost/lambda/switch.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

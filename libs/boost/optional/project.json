@@ -1,0 +1,22 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/optional",
+    "working_dir": "include",
+    "files": [
+        "boost/none.hpp",
+        "boost/none_t.hpp",
+        "boost/optional.hpp",
+        "boost/optional/optional_fwd.hpp",
+        "boost/optional/optional_io.hpp"
+    ],
+    "dependencies": {
+        "https://github.com/boostorg/config": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/move": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/type_traits": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/utility": { "version": "*", "dir": "include" },
+        "https://github.com/boostorg/core": { "version": "*", "dir": "include" }
+    },
+    "versions": [
+        "boost-1.72.0"
+    ]
+}

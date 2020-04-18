@@ -1,0 +1,24 @@
+{
+    "type": "github",
+    "url": "https://github.com/boostorg/algorithm",
+    "working_dir": "include",
+    "files": [
+        "boost/algorithm/algorithm.hpp",
+        "boost/algorithm/apply_permutation.hpp",
+        "boost/algorithm/clamp.hpp",
+        "boost/algorithm/find_backward.hpp",
+        "boost/algorithm/find_not.hpp",
+        "boost/algorithm/gather.hpp",
+        "boost/algorithm/hex.hpp",
+        "boost/algorithm/is_palindrome.hpp",
+        "boost/algorithm/is_partitioned_until.hpp",
+        "boost/algorithm/minmax.hpp",
+        "boost/algorithm/minmax_element.hpp",
+        "boost/algorithm/sort_subrange.hpp",
+        "boost/algorithm/string.hpp",
+        "boost/algorithm/string_regex.hpp"
+    ],
+    "versions": [
+        "boost-1.72.0"
+    ]
+}
