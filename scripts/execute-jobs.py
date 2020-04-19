@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import shutil
 import gzip
 import os
 import argparse
@@ -171,6 +172,8 @@ for j in to_execute:
     job_cache[id] = res
 
     # write cache
+    if os.path.exists(cache_file):
+        shutil.copy(cache_file, cache_file + ".prev")
     with open(cache_file, "w") as f:
         json.dump(job_cache, f, indent=4)
 
