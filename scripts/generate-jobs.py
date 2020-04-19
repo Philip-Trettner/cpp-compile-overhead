@@ -609,14 +609,14 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
                 lib_tmp_dir, "versions", v), extra_args=extra_args, include_dirs=[src_dir, dep_dir])
 
 
-for cat in os.listdir("libs"):
+for cat in sorted(os.listdir("libs")):
     catpath = "libs/" + cat
     if not os.path.isdir(catpath):
         continue
 
     debug_print("  " + catpath)
 
-    for lib in os.listdir(catpath):
+    for lib in sorted(os.listdir(catpath)):
         libpath = catpath + "/" + lib
         if not os.path.isdir(libpath):
             continue
