@@ -36,10 +36,18 @@ A simple setup has a `project.json` like this:
 Please test your PRs locally by at least running the following command on a Linux (preferably Ubuntu/Debian/Mint) machine:
 
 ```
-./generate-data.py tmp -p your_new_project
+./generate-data.py tmp -p your_new_project -c 1
 ```
 
+* `tmp` is the directory used for storing sources, the cache, and the result json
+* `-p your_new_project` means that only your project is getting benchmarked
+* `-c 1` is optional and means that only one configuration (e.g. gcc-Debug-C++11) is tested
+
 (I will run merged PRs on my machine and push the results to https://artificial-mind.net/projects/compile-health/)
+
+Tip A: you can view custom compile-health-data.json on the website.
+
+Tip B: the `versions` are just git references, thus a commit sha also works. You can compare two commits by setting them as versions and then run `generate-data` with `-p your_project` and view the data on the website.
 
 
 ## Structure
