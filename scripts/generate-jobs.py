@@ -578,7 +578,7 @@ def add_project_git(cfg, cat, lib, libpath, make_file_url):
         elif cfg["min-cpp"] == 14:
             cfgs = since_cpp14_configs
         elif cfg["min-cpp"] == 17:
-            cfgs = since_cpp14_configs
+            cfgs = since_cpp17_configs
         else:
             assert False, "unknown cpp min version"
 

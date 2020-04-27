@@ -1,0 +1,19 @@
+{
+  "type": "github",
+  "url": "https://github.com/skypjack/entt",
+  "working_dir": "src",
+  "files": [
+    "entt/entt.hpp",
+    "entt/fwd.hpp",
+    "entt/entity/registry.hpp",
+    "entt/entity/view.hpp",
+    "entt/entity/group.hpp",
+    "entt/entity/fwd.hpp",
+    "entt/entity/entity.hpp",
+    "entt/entity/observer.hpp"
+  ],
+  "min-cpp": 17,
+  "versions": [
+    "v3.3.2"
+  ]
+}
