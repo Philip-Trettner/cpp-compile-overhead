@@ -11,6 +11,15 @@ import time
 import json
 
 def run(file, directory, compiler, compiler_args, verbose):
+
+    is_windows = any(platform.win32_ver())
+    is_linux = not is_windows
+
+    silence_output = False
+    compile_out = None
+    if silence_output:
+        compile_out = open(os.devnull, "w")
+
     def debug_print(s):
         if verbose:
             print(s)
@@ -18,7 +27,7 @@ def run(file, directory, compiler, compiler_args, verbose):
 
     def debug_print_exec(a):
         if verbose:
-            print("executing {}".format(a))
+            print('executing "{}"'.format(' '.join(a)))
 
     # ============================================================
     # Parse args
@@ -57,19 +66,34 @@ def run(file, directory, compiler, compiler_args, verbose):
     baseline_main = os.path.join(tmp_dir, "baseline.cc")
     output_main = os.path.join(tmp_dir, "main.o")
     result = {}
-    preproc_args = [compiler] + cargs + ["-E", file_main, "-o", output_main]
-    preproc_args_ = [compiler] + cargs + ["-E", "main.cc", "-o", "main.o"]
-    compile_args = [compiler] + cargs + ["-c", file_main, "-o", output_main]
-    compile_args_ = [compiler] + cargs + ["-c", "main.cc", "-o", "main.o"]
-    preproc_baseline_args = [compiler] + cargs + \
-        ["-E", baseline_main, "-o", output_main]
-    compile_baseline_args = [compiler] + cargs + \
-        ["-c", baseline_main, "-o", output_main]
+    
+    if is_windows:
+        preproc_args = [compiler] + cargs + [file_main, '/P', '/Fi{}'.format(output_main)]
+        preproc_args_ = [compiler] + cargs + ["main.cc", '/P', '/Fi{}'.format("main.o")]
+        compile_args = [compiler] + cargs + [file_main, '/c', '/Fo{}'.format(output_main)]
+        compile_args_ = [compiler] + cargs + ["main.cc", '/c', '/Fo{}'.format("main.o")]
+        preproc_baseline_args = [compiler] + cargs + \
+            [baseline_main, '/P', '/Fi{}'.format(output_main)]
+        compile_baseline_args = [compiler] + cargs + \
+            [baseline_main, '/c', '/Fo{}'.format(output_main)]
+    else:
+        preproc_args = [compiler] + cargs + ["-E", file_main, "-o", output_main]
+        preproc_args_ = [compiler] + cargs + ["-E", "main.cc", "-o", "main.o"]
+        compile_args = [compiler] + cargs + ["-c", file_main, "-o", output_main]
+        compile_args_ = [compiler] + cargs + ["-c", "main.cc", "-o", "main.o"]
+        preproc_baseline_args = [compiler] + cargs + \
+            ["-E", baseline_main, "-o", output_main]
+        compile_baseline_args = [compiler] + cargs + \
+            ["-c", baseline_main, "-o", output_main]
 
     result["preproc_cmd"] = " ".join(preproc_args_)
     result["compile_cmd"] = " ".join(compile_args_)
+
+    version_args = []
+    if is_linux:
+        version_args += ["--version"]
     result["compiler_version"] = subprocess.check_output(
-        [compiler, "--version"]).decode("utf-8").splitlines()[0]
+        [compiler] + version_args).decode("utf-8").splitlines()[0]
 
     # ============================================================
     # Create temporary files to compile
@@ -91,7 +115,7 @@ def run(file, directory, compiler, compiler_args, verbose):
 
     # -E is preprocessor only (and strips comments)
     debug_print_exec(preproc_args)
-    subprocess.run(preproc_args, check=True)
+    subprocess.run(preproc_args, stdout=compile_out, stderr=compile_out, check=True)
     with open(output_main) as f:
         line_cnt_raw = 0
         line_cnt = 0
@@ -106,7 +130,7 @@ def run(file, directory, compiler, compiler_args, verbose):
 
     # -c compiles to object file
     debug_print_exec(compile_args)
-    subprocess.run(compile_args, check=True)
+    subprocess.run(compile_args, stdout=compile_out, stderr=compile_out, check=True)
     result["object_size"] = os.path.getsize(output_main)
 
     # check symbols
@@ -122,42 +146,48 @@ def run(file, directory, compiler, compiler_args, verbose):
     debug_sym_cnt = 0
     debug_sym_size = 0
     sym_name_size = 0
-    debug_print_exec(["nm", output_main])
-    for l in subprocess.check_output(["nm", "-a", "-S", output_main]).decode("utf-8").splitlines():
-        m = prog.match(l)
-        assert m is not None, "could not parse line " + l
-        ss = m.group(1)
-        st = m.group(2)
-        sn = m.group(3)
-        ss = 0 if ss == "" else int(ss, base=16)
+    if is_windows:
+        debug_print_exec(['dumpbin.exe', output_main])
+        for l in subprocess.check_output(['dumpbin.exe', '/SYMBOLS', '/MAP', output_main]).decode("utf-8").splitlines():
+            assert True, "Windows not supported yet"
+            # TODO: Implement this
+    else:
+        debug_print_exec(["nm", output_main])
+        for l in subprocess.check_output(["nm", "-a", "-S", output_main]).decode("utf-8").splitlines():
+            m = prog.match(l)
+            assert m is not None, "could not parse line " + l
+            ss = m.group(1)
+            st = m.group(2)
+            sn = m.group(3)
+            ss = 0 if ss == "" else int(ss, base=16)
 
-        if sn == "main":
-            continue
+            if sn == "main":
+                continue
 
-        # debug_print("symbol {}, {}, {}".format(ss,st,sn))
+            # debug_print("symbol {}, {}, {}".format(ss,st,sn))
 
-        if st in ['U']:
-            undef_sym_cnt += 1
-            undef_sym_size += ss
-            sym_name_size += len(sn)
-        elif st in ['b', 'B', 'r', 'R', 'd', 'D', 'n', 'g', 'G']:
-            data_sym_cnt += 1
-            data_sym_size += ss
-            sym_name_size += len(sn)
-        elif st in ['t', 'T']:
-            code_sym_cnt += 1
-            code_sym_size += ss
-            sym_name_size += len(sn)
-        elif st in ['w', 'W', 'v', 'V', 'u']:
-            weak_sym_cnt += 1
-            weak_sym_size += ss
-            sym_name_size += len(sn)
-        elif st in ['N', 'a']:
-            debug_sym_cnt += 1
-            debug_sym_size += ss
-            sym_name_size += len(sn)
-        else:
-            assert False, "unknown symbol type " + st
+            if st in ['U']:
+                undef_sym_cnt += 1
+                undef_sym_size += ss
+                sym_name_size += len(sn)
+            elif st in ['b', 'B', 'r', 'R', 'd', 'D', 'n', 'g', 'G']:
+                data_sym_cnt += 1
+                data_sym_size += ss
+                sym_name_size += len(sn)
+            elif st in ['t', 'T']:
+                code_sym_cnt += 1
+                code_sym_size += ss
+                sym_name_size += len(sn)
+            elif st in ['w', 'W', 'v', 'V', 'u']:
+                weak_sym_cnt += 1
+                weak_sym_size += ss
+                sym_name_size += len(sn)
+            elif st in ['N', 'a']:
+                debug_sym_cnt += 1
+                debug_sym_size += ss
+                sym_name_size += len(sn)
+            else:
+                assert False, "unknown symbol type " + st
 
     result["undefined_symbol_count"] = undef_sym_cnt
     result["undefined_symbol_size"] = undef_sym_size
@@ -174,24 +204,37 @@ def run(file, directory, compiler, compiler_args, verbose):
     # strings (BEFORE baseline!)
     string_cnt = 0
     string_size = 0
-    for l in subprocess.check_output(["strings", output_main]).decode("utf-8").splitlines():
-        string_cnt += 1
-        string_size += len(l)
+    if is_windows:
+        assert True, "Windows not supported yet"
+        # TODO: Implement this
+    else:
+        for l in subprocess.check_output(["strings", output_main]).decode("utf-8").splitlines():
+            string_cnt += 1
+            string_size += len(l)
     result["string_count"] = string_cnt
     result["string_size"] = string_size
 
     # section sizes (BEFORE baseline!)
-    for l in subprocess.check_output(["size", "-B", output_main]).decode("utf-8").splitlines():
-        if "main.o" in l:
-            parts = l.split()
-            result["text_size"] = int(parts[0])
-            result["data_size"] = int(parts[1])
-            result["bss_size"] = int(parts[2])
+    if is_windows:
+        # TODO: Implement this
+        
+        result["text_size"] = 0
+        result["data_size"] = 0
+        result["bss_size"] = 0
 
-    # baseline object size
-    debug_print_exec(compile_baseline_args)
-    subprocess.run(compile_baseline_args, check=True)
-    result["object_size_base"] = os.path.getsize(output_main)
+        result["object_size_base"] = 0
+    else:
+        for l in subprocess.check_output(["size", "-B", output_main]).decode("utf-8").splitlines():
+            if "main.o" in l:
+                parts = l.split()
+                result["text_size"] = int(parts[0])
+                result["data_size"] = int(parts[1])
+                result["bss_size"] = int(parts[2])
+
+        # baseline object size
+        debug_print_exec(compile_baseline_args)
+        subprocess.run(compile_baseline_args, stdout=compile_out, stderr=compile_out, check=True)
+        result["object_size_base"] = os.path.getsize(output_main)
 
 
     # ============================================================
@@ -210,7 +253,7 @@ def run(file, directory, compiler, compiler_args, verbose):
                 break
 
             t0 = time.perf_counter()
-            subprocess.call(sargs)
+            subprocess.call(sargs, stdout=compile_out, stderr=compile_out)
             t1 = time.perf_counter()
             ts.append(t1 - t0)
             ts.sort()

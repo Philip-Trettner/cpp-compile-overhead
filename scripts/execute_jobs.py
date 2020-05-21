@@ -11,6 +11,10 @@ import json
 import scripts.analyze_file
 
 def run(jobs_file, dest_file, dest_dir, cache_file, verbose):
+    
+    is_windows = any(platform.win32_ver())
+    is_linux = not is_windows
+
     job_cache = {}
 
 
@@ -149,7 +153,10 @@ def run(jobs_file, dest_file, dest_dir, cache_file, verbose):
         id = j["cache-key"]
         compiler_args = j["args"]
         for d in j["include_dirs"]:
-            compiler_args += ["-I" + d]
+            if is_windows:
+                compiler_args += ["/I" + d]
+            else:
+                compiler_args += ["-I" + d]
         if verbose:
             print("[{}/{}] executing '{} {}'".format(done, len(to_execute), j['compiler'], " ".join(compiler_args)))
         res = scripts.analyze_file.run(j['file'], dest_dir, j['compiler'], compiler_args, verbose)

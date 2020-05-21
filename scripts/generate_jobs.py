@@ -9,6 +9,9 @@ import platform
 import shutil
 import distutils.dir_util
 import json
+from pathlib import Path
+
+import scripts.find_visual_studio
 
 def run(dest_file, dest_dir, project, max_num_configs, verbose):
     def debug_print(s):
@@ -33,14 +36,45 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
         def __init__(self):
             self.args = []
 
-        def make_args(self):
-            return ["-std=c++{}".format(self.cpp)] + self.args
-
 
     def generate_configs():
 
         if is_windows:
-            assert False, "TODO: implement me"
+            vs_path = scripts.find_visual_studio.run(2019)
+            assert vs_path is not None, "could not find Visual Studio"
+
+            def execute_and_steal_environment(args):
+                null = open(os.devnull, 'w')
+                environment = subprocess.check_output(args + ["&&", "set"], stderr=null)
+                for env in environment.splitlines():
+                    k, _, v = map(str.strip, env.decode('utf-8').strip().partition('='))
+                    if k.startswith('?'):
+                        continue
+                    os.environ[k] = v
+
+            vcvarsall_path = vs_path / Path("VC/Auxiliary/Build/vcvarsall.bat")
+            assert vcvarsall_path.exists(), "could not find vcvarsall.bat"
+            execute_and_steal_environment([vcvarsall_path, "x64", "x64"])
+
+            variants = [
+                ["Debug", ['/Od', '/Ob0', '/MDd', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                ["RelWithDebInfo", ['/O2', '/Ob1', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                ["Release", ['/O2', '/Ob2', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+            ]
+
+            cl_path = subprocess.check_output(['where', 'cl.exe']).decode('utf-8').splitlines()[0]
+
+            cc = ['Visual Studio 2019', cl_path]
+            
+            for cpp in [14, 17]:
+                for variant in variants:
+                    c = Config()
+                    c.cpp = cpp
+                    c.args = variant[1] + ["/std:c++{}".format(cpp)]
+                    c.variant = variant[0]
+                    c.compiler = cc[1]
+                    c.compiler_name = cc[0]
+                    yield c
 
         elif is_linux:
             for cc in [
@@ -78,7 +112,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                         for variant in variants:
                             c = Config()
                             c.cpp = cpp
-                            c.args = variant[1] + extra_args + ["-march=skylake"]
+                            c.args = variant[1] + extra_args + ["-march=skylake", "-std=c++{}".format(cpp)]
                             c.variant = variant[0] + var_suffix
                             c.compiler = cc[1]
                             c.compiler_name = cc[0]
@@ -122,7 +156,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                 "name": name,
                 "file": file,
                 "variant": c.variant,
-                "args": c.make_args() + extra_args,
+                "args": c.args + extra_args,
                 "cpp": c.cpp,
                 "include_dirs": include_dirs,
                 "compiler": c.compiler,
