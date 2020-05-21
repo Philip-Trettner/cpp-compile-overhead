@@ -137,8 +137,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
     # ===============================================================
 
 
-    if not project:
-
+    if not project or project == 'stl_cpp':
         # ===============================================================
         # c++ std
 
@@ -249,6 +248,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                 add("Standard Library", "C++ Standard Library", url_cpp,
                     url_cpp + "/" + h, "", "<" + h + ">", h, [c], dest_dir)
 
+    if not project or project == 'stl_c':
         # ===============================================================
         # c std
 
@@ -288,6 +288,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
             add("Standard Library", "C Standard Library",
                 url_c, None, "", "<" + h + ">", h, all_configs, dest_dir)
 
+    if (not project or project == 'posix') and not is_windows:
         # ===============================================================
         # c POSIX
 
@@ -452,9 +453,6 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
 
 
     def get_repo_files(url, version, base_dir, target_dir):
-        global args
-        global fetched_repos
-
         debug_print("      .. getting files from " + url)
 
         urltype = None
