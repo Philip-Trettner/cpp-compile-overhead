@@ -40,42 +40,44 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
     def generate_configs():
 
         if is_windows:
-            vs_path = scripts.find_visual_studio.run(2019)
-            assert vs_path is not None, "could not find Visual Studio"
+            for vs_version in [2019, 2017, 2015]:
+                vs_path = scripts.find_visual_studio.run(vs_version)
+                if vs_path is not None:
 
-            def execute_and_steal_environment(args):
-                null = open(os.devnull, 'w')
-                environment = subprocess.check_output(args + ["&&", "set"], stderr=null)
-                for env in environment.splitlines():
-                    k, _, v = map(str.strip, env.decode('utf-8').strip().partition('='))
-                    if k.startswith('?'):
-                        continue
-                    os.environ[k] = v
+                    def execute_and_steal_environment(args):
+                        null = open(os.devnull, 'w')
+                        environment = subprocess.check_output(args + ["&&", "set"], stderr=null)
+                        for env in environment.splitlines():
+                            k, _, v = map(str.strip, env.decode('utf-8').strip().partition('='))
+                            if k.startswith('?'):
+                                continue
+                            os.environ[k] = v
 
-            vcvarsall_path = vs_path / Path("VC/Auxiliary/Build/vcvarsall.bat")
-            assert vcvarsall_path.exists(), "could not find vcvarsall.bat"
-            execute_and_steal_environment([vcvarsall_path, "x64", "x64"])
+                    vcvarsall_path = vs_path / Path("VC/Auxiliary/Build/vcvarsall.bat")
+                    assert vcvarsall_path.exists(), "could not find vcvarsall.bat"
+                    execute_and_steal_environment([vcvarsall_path, "x64", "x64"])
 
-            variants = [
-                ["Debug", ['/Od', '/Ob0', '/MDd', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                ["RelWithDebInfo", ['/O2', '/Ob1', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                ["Release", ['/O2', '/Ob2', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-            ]
+                    variants = [
+                        ["Debug", ['/Od', '/Ob0', '/MDd', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                        ["RelWithDebInfo", ['/O2', '/Ob1', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                        ["Release", ['/O2', '/Ob2', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                    ]
 
-            cl_path = subprocess.check_output(['where', 'cl.exe']).decode('utf-8').splitlines()[0]
+                    cl_path = subprocess.check_output(['where', 'cl.exe']).decode('utf-8').splitlines()[0]
 
-            cc = ['Visual Studio 2019', cl_path]
-            
-            for cpp in [14, 17]:
-                for variant in variants:
-                    c = Config()
-                    c.cpp = cpp
-                    c.args = variant[1] + ["/std:c++{}".format(cpp)]
-                    c.variant = variant[0]
-                    c.compiler = cc[1]
-                    c.compiler_name = cc[0]
-                    yield c
+                    cc = ['Visual Studio {}'.format(vs_version), cl_path]
+                    
+                    for cpp in [14, 17]:
+                        for variant in variants:
+                            c = Config()
+                            c.cpp = cpp
+                            c.args = variant[1] + ["/std:c++{}".format(cpp)]
+                            c.variant = variant[0]
+                            c.compiler = cc[1]
+                            c.compiler_name = cc[0]
+                            yield c
 
+                    break
         elif is_linux:
             for cc in [
                 ['Clang 6', '/usr/bin/clang++-6'],
