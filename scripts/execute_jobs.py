@@ -4,7 +4,6 @@ import shutil
 import gzip
 import os
 import argparse
-import subprocess
 import platform
 import json
 
@@ -12,9 +11,6 @@ import scripts.analyze_file
 
 def run(jobs_file, dest_file, dest_dir, cache_file, verbose):
     
-    is_windows = any(platform.win32_ver())
-    is_linux = not is_windows
-
     job_cache = {}
 
 
@@ -152,14 +148,8 @@ def run(jobs_file, dest_file, dest_dir, cache_file, verbose):
     for j in to_execute:
         id = j["cache-key"]
         compiler_args = j["args"]
-        for d in j["include_dirs"]:
-            if is_windows:
-                compiler_args += ["/I" + d]
-            else:
-                compiler_args += ["-I" + d]
-        if verbose:
-            print("[{}/{}] executing '{} {}'".format(done, len(to_execute), j['compiler'], " ".join(compiler_args)))
-        res = scripts.analyze_file.run(j['file'], dest_dir, j['compiler'], compiler_args, verbose)
+        print("[{}/{}] executing '{} {}' for file {}".format(done, len(to_execute), j['compiler_name'], j['variant'], j['file']))
+        res = scripts.analyze_file.run(j['file'], j["include_dirs"], dest_dir, j['compiler'], j['compiler_type'], compiler_args, not verbose, verbose)
 
         res = json.loads(res)
         job_cache[id] = res

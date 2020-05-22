@@ -10,15 +10,16 @@ import platform
 import time
 import json
 
-def run(file, directory, compiler, compiler_args, verbose):
+def run(file, include_dirs, directory, compiler, compiler_type, compiler_args, silence_compiler_output, verbose):
 
     is_windows = any(platform.win32_ver())
     is_linux = not is_windows
 
-    silence_output = False
+    silence_compiler_output = True
     compile_out = None
-    if silence_output:
-        compile_out = open(os.devnull, "w")
+    null_out = open(os.devnull, "w")
+    if silence_compiler_output:
+        compile_out = null_out
 
     def debug_print(s):
         if verbose:
@@ -67,7 +68,12 @@ def run(file, directory, compiler, compiler_args, verbose):
     output_main = os.path.join(tmp_dir, "main.o")
     result = {}
     
-    if is_windows:
+    if include_dirs is None:
+        include_dirs = []
+
+    if compiler_type == 'msvc':
+        for d in include_dirs:
+            cargs += ["/I" + d]
         preproc_args = [compiler] + cargs + [file_main, '/P', '/Fi{}'.format(output_main)]
         preproc_args_ = [compiler] + cargs + ["main.cc", '/P', '/Fi{}'.format("main.o")]
         compile_args = [compiler] + cargs + [file_main, '/c', '/Fo{}'.format(output_main)]
@@ -76,7 +82,10 @@ def run(file, directory, compiler, compiler_args, verbose):
             [baseline_main, '/P', '/Fi{}'.format(output_main)]
         compile_baseline_args = [compiler] + cargs + \
             [baseline_main, '/c', '/Fo{}'.format(output_main)]
-    else:
+        version_args = []
+    elif compiler_type == 'gcc':
+        for d in include_dirs:
+            cargs += ["-I" + d]
         preproc_args = [compiler] + cargs + ["-E", file_main, "-o", output_main]
         preproc_args_ = [compiler] + cargs + ["-E", "main.cc", "-o", "main.o"]
         compile_args = [compiler] + cargs + ["-c", file_main, "-o", output_main]
@@ -85,15 +94,14 @@ def run(file, directory, compiler, compiler_args, verbose):
             ["-E", baseline_main, "-o", output_main]
         compile_baseline_args = [compiler] + cargs + \
             ["-c", baseline_main, "-o", output_main]
-
+        version_args += ["--version"]
+    else:
+        assert False, "Unkown compiler type"
     result["preproc_cmd"] = " ".join(preproc_args_)
     result["compile_cmd"] = " ".join(compile_args_)
 
-    version_args = []
-    if is_linux:
-        version_args += ["--version"]
     result["compiler_version"] = subprocess.check_output(
-        [compiler] + version_args).decode("utf-8").splitlines()[0]
+        [compiler] + version_args, stderr=subprocess.STDOUT).decode("utf-8").splitlines()[0]
 
     # ============================================================
     # Create temporary files to compile
@@ -147,10 +155,10 @@ def run(file, directory, compiler, compiler_args, verbose):
     debug_sym_size = 0
     sym_name_size = 0
     if is_windows:
-        debug_print_exec(['dumpbin.exe', output_main])
-        for l in subprocess.check_output(['dumpbin.exe', '/SYMBOLS', '/MAP', output_main]).decode("utf-8").splitlines():
-            assert True, "Windows not supported yet"
-            # TODO: Implement this
+        assert True, "Windows not supported yet"
+        # TODO: Implement this
+        # debug_print_exec(['dumpbin.exe', output_main])
+        # for l in subprocess.check_output(['dumpbin.exe', '/SYMBOLS', '/MAP', output_main], stderr=null_out).decode("utf-8").splitlines():
     else:
         debug_print_exec(["nm", output_main])
         for l in subprocess.check_output(["nm", "-a", "-S", output_main]).decode("utf-8").splitlines():
@@ -279,8 +287,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="C++ compile-health analyzer")
     parser.add_argument("file", metavar="F", type=str,
                         help="C++ source or header file to analyze")
+    parser.add_argument("include_dirs", metavar="I", type=str,
+                        help="Directories in which includes are found, can also be passes as direct arguments to the compiler in args")
     parser.add_argument("-c", "--compiler", required=True,
                         type=str, help="compiler to use")
+    parser.add_argument("-t", "--compiler_type", required=True,
+                        type=str, help="type of compiler arguments to use, accepts msvc or gcc")
     parser.add_argument("-d", "--dir", required=True, type=str,
                         help="temporary directory to use (e.g. /tmp)")
     parser.add_argument(
@@ -289,6 +301,12 @@ if __name__ == '__main__':
                         action="store_true")
 
     args = parser.parse_args()
+
+    if args.compiler_type is None:
+        if 'cl.exe' in args.compiler or 'clang-cl' in args.compiler:
+           args.compiler_type = 'msvc'
+        else:
+            args.compiler_typ = 'gcc'
     
-    json_result = run(args.file, args.dir, args.compiler, args.args, args.verbose)
+    json_result = run(args.file, args.include_dirs, args.dir, args.compiler, args.compiler_type, args.args, not args.verbose, args.verbose)
     print(json_result)

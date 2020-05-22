@@ -32,6 +32,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
         compiler = None
         compiler_name = None
         variant = None
+        compiler_type = None
 
         def __init__(self):
             self.args = []
@@ -78,6 +79,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                             c.variant = variant[0]
                             c.compiler = cc[1]
                             c.compiler_name = cc[0]
+                            c.compiler_type = 'msvc'
                             yield c
 
                     break
@@ -121,6 +123,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                             c.variant = variant[0] + var_suffix
                             c.compiler = cc[1]
                             c.compiler_name = cc[0]
+                            c.compiler_type = 'gcc'
                             yield c
 
         else:
@@ -161,6 +164,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                 "name": name,
                 "file": file,
                 "variant": c.variant,
+                "compiler_type": c.compiler_type,
                 "args": c.args + extra_args,
                 "cpp": c.cpp,
                 "include_dirs": include_dirs,
