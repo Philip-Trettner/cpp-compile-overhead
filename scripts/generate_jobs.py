@@ -46,21 +46,24 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
 
                     def execute_and_steal_environment(args):
                         null = open(os.devnull, 'w')
-                        environment = subprocess.check_output(args + ["&&", "set"], stderr=null)
+                        environment = subprocess.check_output(args + ['&&', 'set'], stderr=null)
                         for env in environment.splitlines():
                             k, _, v = map(str.strip, env.decode('utf-8').strip().partition('='))
                             if k.startswith('?'):
                                 continue
                             os.environ[k] = v
 
-                    vcvarsall_path = vs_path / Path("VC/Auxiliary/Build/vcvarsall.bat")
-                    assert vcvarsall_path.exists(), "could not find vcvarsall.bat"
-                    execute_and_steal_environment([vcvarsall_path, "x64", "x64"])
+                    is_64_bit = platform.machine().endswith('64')
+                    toolst_arch = 'x64' if is_64_bit else 'x86'
+
+                    vcvarsall_path = vs_path / Path('VC/Auxiliary/Build/vcvarsall.bat')
+                    assert vcvarsall_path.exists(), 'could not find vcvarsall.bat'
+                    execute_and_steal_environment([vcvarsall_path, toolst_arch, toolst_arch])
 
                     variants = [
-                        ["Debug", ['/Od', '/Ob0', '/MDd', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                        ["RelWithDebInfo", ['/O2', '/Ob1', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                        ["Release", ['/O2', '/Ob2', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                        ['Debug', ['/Od', '/Ob0', '/MDd', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                        ['RelWithDebInfo', ['/O2', '/Ob1', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
+                        ['Release', ['/O2', '/Ob2', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
                     ]
 
                     cl_path = subprocess.check_output(['where', 'cl.exe']).decode('utf-8').splitlines()[0]
