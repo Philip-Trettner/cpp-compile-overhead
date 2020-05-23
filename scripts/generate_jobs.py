@@ -40,7 +40,31 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
 
     def generate_configs():
 
+        msvc_variants = [
+            ['Debug', ['/Od', '/Ob0', '/MDd', '/GS', '/DWIN32', '/D_WINDOWS', '/DNDEBUG']],
+            ['RelWithDebInfo', ['/O2', '/Ob1', '/MD', '/GS', '/DWIN32', '/D_WINDOWS', '/DNDEBUG']],
+            ['Release', ['/O2', '/Ob2', '/MD', '/GS', '/DWIN32', '/D_WINDOWS', '/DNDEBUG']],
+        ]
+        
+        gcc_variants = [
+            ["Debug", ['-O0', '-g']],
+            ["RelWithDebInfo", ['-O2', '-g', '-DNDEBUG']],
+            ["Release", ['-O3', '-DNDEBUG']],
+        ]
+
+        def make_cpp_arg(cpp, compiler_type):
+            if compiler_type == 'msvc':
+                return "/std:c++{}".format(cpp)
+            elif compiler_type == 'gcc':
+                return "-std=c++{}".format(cpp)
+            else:
+                assert False, "Unkown compiler type"
+
+
         if is_windows:
+            def get_absolute_path(prog):
+                return subprocess.check_output(['where.exe', prog]).decode('utf-8').splitlines()[0]
+            
             for vs_version in [2019, 2017, 2015]:
                 vs_path = scripts.find_visual_studio.run(vs_version)
                 if vs_path is not None:
@@ -61,21 +85,15 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                     assert vcvarsall_path.exists(), 'could not find vcvarsall.bat'
                     execute_and_steal_environment([vcvarsall_path, toolst_arch, toolst_arch])
 
-                    variants = [
-                        ['Debug', ['/Od', '/Ob0', '/MDd', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                        ['RelWithDebInfo', ['/O2', '/Ob1', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                        ['Release', ['/O2', '/Ob2', '/MD', '/GS', '/D "WIN32"', '/D "_WINDOWS"', '/D "NDEBUG"']],
-                    ]
-
-                    cl_path = subprocess.check_output(['where', 'cl.exe']).decode('utf-8').splitlines()[0]
+                    cl_path = get_absolute_path('cl.exe')
 
                     cc = ['Visual Studio {}'.format(vs_version), cl_path]
                     
                     for cpp in [14, 17]:
-                        for variant in variants:
+                        for variant in msvc_variants:
                             c = Config()
                             c.cpp = cpp
-                            c.args = variant[1] + ["/std:c++{}".format(cpp)]
+                            c.args = variant[1] + [make_cpp_arg(cpp, 'msvc')]
                             c.variant = variant[0]
                             c.compiler = cc[1]
                             c.compiler_name = cc[0]
@@ -83,6 +101,25 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                             yield c
 
                     break
+            
+            for cc in [
+                ['Clang', get_absolute_path('clang.exe'), 'gcc', gcc_variants],
+                ['Clang-Cl', get_absolute_path('clang-cl.exe'), 'msvc', msvc_variants]
+            ]:
+                if not os.path.exists(cc[1]):
+                    continue
+                
+                for cpp in [14, 17]:
+                    for variant in cc[3]:
+                        if cc[1] is not None:
+                            c = Config()
+                            c.cpp = cpp
+                            c.args = variant[1] + [make_cpp_arg(cpp, cc[2])]
+                            c.variant = variant[0]
+                            c.compiler = cc[1]
+                            c.compiler_name = cc[0]
+                            c.compiler_type = cc[2]
+                            yield c
         elif is_linux:
             for cc in [
                 ['Clang 6', '/usr/bin/clang++-6'],
@@ -95,12 +132,6 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
             ]:
                 if not os.path.exists(cc[1]):
                     continue
-
-                variants = [
-                    ["Debug", ['-O0', '-g']],
-                    ["RelWithDebInfo", ['-O2', '-g', '-DNDEBUG']],
-                    ["Release", ['-O3', '-DNDEBUG']],
-                ]
 
                 for libcpp in [False, True]:
                     if libcpp and not cc[0].startswith("Clang"):
@@ -116,10 +147,10 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                         var_suffix = " (libc++)"
 
                     for cpp in [11, 14, 17]:
-                        for variant in variants:
+                        for variant in gcc_variants:
                             c = Config()
                             c.cpp = cpp
-                            c.args = variant[1] + extra_args + ["-march=skylake", "-std=c++{}".format(cpp)]
+                            c.args = variant[1] + extra_args + ["-march=skylake", make_cpp_arg(cpp, 'gcc')]
                             c.variant = variant[0] + var_suffix
                             c.compiler = cc[1]
                             c.compiler_name = cc[0]

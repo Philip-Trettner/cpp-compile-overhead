@@ -15,7 +15,6 @@ def run(file, include_dirs, directory, compiler, compiler_type, compiler_args, s
     is_windows = any(platform.win32_ver())
     is_linux = not is_windows
 
-    silence_compiler_output = True
     compile_out = None
     null_out = open(os.devnull, "w")
     if silence_compiler_output:
@@ -82,7 +81,10 @@ def run(file, include_dirs, directory, compiler, compiler_type, compiler_args, s
             [baseline_main, '/P', '/Fi{}'.format(output_main)]
         compile_baseline_args = [compiler] + cargs + \
             [baseline_main, '/c', '/Fo{}'.format(output_main)]
-        version_args = []
+        if compiler.endswith('clang-cl.exe'):
+            version_args = ['--version']
+        else:
+            version_args = []
     elif compiler_type == 'gcc':
         for d in include_dirs:
             cargs += ["-I" + d]
@@ -94,9 +96,10 @@ def run(file, include_dirs, directory, compiler, compiler_type, compiler_args, s
             ["-E", baseline_main, "-o", output_main]
         compile_baseline_args = [compiler] + cargs + \
             ["-c", baseline_main, "-o", output_main]
-        version_args += ["--version"]
+        version_args = ["--version"]
     else:
         assert False, "Unkown compiler type"
+
     result["preproc_cmd"] = " ".join(preproc_args_)
     result["compile_cmd"] = " ".join(compile_args_)
 
