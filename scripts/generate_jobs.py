@@ -41,7 +41,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
     def generate_configs():
 
         msvc_variants = [
-            ['Debug', ['/Od', '/Ob0', '/MDd', '/GS', '/DWIN32', '/D_WINDOWS', '/DNDEBUG']],
+            ['Debug', ['/Od', '/Ob0', '/MDd', '/GS', '/DWIN32', '/D_WINDOWS']],
             ['RelWithDebInfo', ['/O2', '/Ob1', '/MD', '/GS', '/DWIN32', '/D_WINDOWS', '/DNDEBUG']],
             ['Release', ['/O2', '/Ob2', '/MD', '/GS', '/DWIN32', '/D_WINDOWS', '/DNDEBUG']],
         ]
@@ -109,7 +109,7 @@ def run(dest_file, dest_dir, project, max_num_configs, verbose):
                 if not os.path.exists(cc[1]):
                     continue
                 
-                for cpp in [14, 17]:
+                for cpp in [11, 14, 17]:
                     for variant in cc[3]:
                         if cc[1] is not None:
                             c = Config()
