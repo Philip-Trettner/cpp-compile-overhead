@@ -4,6 +4,9 @@ import os
 import subprocess
 import argparse
 
+import scripts.generate_jobs
+import scripts.execute_jobs
+
 parser = argparse.ArgumentParser(
     description="Generate data.js for C++ compile-health analyzer")
 parser.add_argument("dir", metavar="D",
@@ -28,22 +31,11 @@ if args.clear and os.path.exists(cache_file):
     with open(cache_file, "w") as f:
         f.write("{}")
 
-verbose_args = []
-if args.verbose:
-    verbose_args.append("-v")
-
 # generate jobs
-extra_args = []
-if args.project:
-    extra_args += ["-p", args.project]
-if args.configs:
-    extra_args += ["-c", str(args.configs)]
-subprocess.check_call(
-    ["python3", "scripts/generate-jobs.py", "-d", args.dir, jobs_file] + extra_args + verbose_args)
+scripts.generate_jobs.run(jobs_file, args.dir, args.project, args.configs, args.verbose)
 
 # execute jobs
-subprocess.check_call(["python3", "scripts/execute-jobs.py", "-v",
-                       "-d", args.dir, "-c", cache_file, jobs_file, data_file] + verbose_args)
+scripts.execute_jobs.run(jobs_file, data_file, args.dir, cache_file, args.verbose)
 
 print("generated {} kB of json data".format(
     int(os.path.getsize(data_file) / 1024.)))
