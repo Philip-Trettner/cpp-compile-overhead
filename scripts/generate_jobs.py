@@ -11,7 +11,8 @@ import distutils.dir_util
 import json
 from pathlib import Path
 
-import scripts.find_visual_studio
+if any(platform.win32_ver()):
+    import scripts.find_visual_studio
 
 def run(dest_file, dest_dir, project, max_num_configs, verbose):
     def debug_print(s):
